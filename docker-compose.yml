@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  yoko-db:
+    image: pgvector/pgvector:pg16
+    container_name: yoko-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: yoko_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - yoko_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'   
+          memory: 512M  
+        reservations:
+          cpus: '0.2'
+          memory: 128M  
+
+volumes:
+  yoko_postgres_data:
