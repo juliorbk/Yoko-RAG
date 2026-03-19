@@ -6,7 +6,7 @@ Este sistema está construido bajo una arquitectura **RAG (Retrieval-Augmented G
 
 ## 🚀 Tecnologías Principales
 
-- **Framework:** Java 17+ / Spring Boot 3.x
+- **Framework:** Java 21+ / Spring Boot 4.x
 - **Base de Datos Relacional:** PostgreSQL (Historial de sesiones y usuarios)
 - **Base de Datos Vectorial:** pgvector (Búsqueda semántica de documentos y FAQs)
 - **Integración IA:** Spring AI / LangChain4j
