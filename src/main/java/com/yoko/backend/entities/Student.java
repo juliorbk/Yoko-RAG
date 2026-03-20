@@ -1,5 +1,6 @@
 package com.yoko.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,11 @@ public class Student {
   private String career;
   private Integer currentSemester;
 
-  @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+  @OneToMany(
+    mappedBy = "student",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+  )
+  @JsonIgnore
   private List<ChatSession> chatSessions;
 }
