@@ -22,26 +22,26 @@ El backend expone una API REST consumible por clientes web e implementa un flujo
 ## Estructura:
 
 com.yoko.backend
-├── YokoApplication.java # Archivo principal que arranca la app
-├── config/ # Configuraciones globales
-│ ├── AiConfig.java # Configuración del LLM y Vector DB
-│ └── CorsConfig.java # Para permitir que tu frontend web se conecte
-├── controllers/ # Los endpoints REST (la cara de la API)
-│ ├── ChatController.java # Recibe las peticiones de los mensajes
-│ └── StudentController.java # Maneja la info del estudiante
-├── dtos/ # Data Transfer Objects
-│ ├── request/ # Lo que el frontend envía (ej. MessageRequest)
-│ └── response/ # Lo que devuelves (ej. ChatResponse)
-├── entities/ # El modelado de la base de datos
-│ ├── Student.java
-│ ├── ChatSession.java
-│ ├── Message.java
-│ └── FaqDocument.java # La tabla vectorial
-├── exceptions/ # Manejo de errores
-│ └── GlobalExceptionHandler.java # Para devolver JSONs limpios si algo falla
-├── repositories/ # Comunicación con PostgreSQL (Spring Data JPA)
-│ ├── ChatSessionRepository.java
-│ └── MessageRepository.java
-└── services/ # El "cerebro" donde ocurre la magia
-├── ChatService.java # Lógica de guardar mensajes y recuperar historial
-└── YokoRagService.java # Búsqueda semántica + armado de prompt para la IA
+├── YokoApplication.java            # Archivo principal que arranca la app
+├── config/                         # Configuraciones globales
+│   ├── AiConfig.java               # Configuración del LLM y Vector DB
+│   └── CorsConfig.java             # Para permitir que tu frontend web se conecte
+├── controllers/                    # Los endpoints REST (la cara de la API)
+│   ├── ChatController.java         # Recibe las peticiones de los mensajes
+│   └── StudentController.java      # Maneja la info del estudiante
+├── dtos/                           # Data Transfer Objects
+│   ├── request/                    # Lo que el frontend envía (ej. MessageRequest)
+│   └── response/                   # Lo que devuelves (ej. ChatResponse)
+├── entities/                       # El modelado de la base de datos
+│   ├── Student.java
+│   ├── ChatSession.java
+│   ├── Message.java
+│   └── FaqDocument.java            # La tabla vectorial
+├── exceptions/                     # Manejo de errores
+│   └── GlobalExceptionHandler.java # Para devolver JSONs limpios si algo falla
+├── repositories/                   # Comunicación con PostgreSQL (Spring Data JPA)
+│   ├── ChatSessionRepository.java
+│   └── MessageRepository.java
+└── services/                       # El "cerebro" donde ocurre la magia
+    ├── ChatService.java            # Lógica de guardar mensajes y recuperar historial
+    └── YokoRagService.java         # Búsqueda semántica + armado de prompt para la IA
