@@ -11,6 +11,7 @@ Este sistema está construido bajo una arquitectura **RAG (Retrieval-Augmented G
 - **Base de Datos Vectorial:** pgvector (Búsqueda semántica de documentos y FAQs)
 - **Integración IA:** Spring AI / LangChain4j
 
+
 ## ⚙️ Arquitectura
 
 El backend expone una API REST consumible por clientes web e implementa un flujo de procesamiento que incluye:
@@ -19,9 +20,7 @@ El backend expone una API REST consumible por clientes web e implementa un flujo
 2.  **Búsqueda Semántica:** Vectorización de consultas para recuperar el contexto institucional más relevante.
 3.  **Generación Aumentada:** Orquestación de _prompts_ combinando el historial del usuario, el contexto recuperado y las directrices del sistema antes de consultar al LLM.
 
-## Estructura:
-
-com.yoko.backend
+```com.yoko.backend
 ├── YokoApplication.java            # Archivo principal que arranca la app
 ├── config/                         # Configuraciones globales
 │   ├── AiConfig.java               # Configuración del LLM y Vector DB
@@ -44,4 +43,4 @@ com.yoko.backend
 │   └── MessageRepository.java
 └── services/                       # El "cerebro" donde ocurre la magia
     ├── ChatService.java            # Lógica de guardar mensajes y recuperar historial
-    └── YokoRagService.java         # Búsqueda semántica + armado de prompt para la IA
+    └── YokoRagService.java         # Búsqueda semántica + armado de prompt para la IA ```
