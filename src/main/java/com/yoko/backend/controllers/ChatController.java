@@ -45,15 +45,7 @@ public class ChatController {
     return studentRepository
       .findByEmail(student.getEmail())
       .map(ResponseEntity::ok)
-      .orElseGet(() -> {
-        Student s = Student.builder()
-          .name(student.getName())
-          .email(student.getEmail())
-          .career(student.getCareer())
-          .currentSemester(student.getCurrentSemester())
-          .build();
-        return ResponseEntity.ok(studentRepository.save(s));
-      });
+      .orElseGet(() -> ResponseEntity.ok(studentRepository.save(student)));
   }
 
   @PostMapping("/{studentId}")
