@@ -2,7 +2,7 @@ package com.yoko.backend.services;
 
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
-import com.yoko.backend.entities.MessageRole;
+import com.yoko.backend.entities.Role;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import java.util.List;
@@ -62,7 +62,7 @@ public class ChatService {
       recentHistory
         .stream()
         .map(msg ->
-          msg.getRole().equals(MessageRole.USER)
+          msg.getRole().equals(Role.USER)
             ? new UserMessage(msg.getContent())
             : new AssistantMessage(msg.getContent())
         )
@@ -73,7 +73,7 @@ public class ChatService {
     Message userMessage = Message.builder()
       .chatSession(session)
       .content(userText)
-      .role(MessageRole.USER)
+      .role(Role.USER)
       .build();
 
     messageRepository.save(userMessage);
@@ -130,7 +130,7 @@ public class ChatService {
     Message aiMessage = Message.builder()
       .chatSession(session)
       .content(yokoResponse)
-      .role(MessageRole.ASSISTANT)
+      .role(Role.ASSISTANT)
       .build();
 
     messageRepository.save(aiMessage);

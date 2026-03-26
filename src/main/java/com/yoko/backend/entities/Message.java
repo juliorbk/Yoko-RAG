@@ -46,7 +46,7 @@ public class Message {
    */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private MessageRole role;
+  private Role role;
 
   /**
    * Timestamp of when this message was created.
