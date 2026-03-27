@@ -1,10 +1,12 @@
 package com.yoko.backend.services;
 
+import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.RegisterRequest;
 import com.yoko.backend.entities.Role;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.UserRepository;
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,12 +15,29 @@ public class AuthService {
   //inyeccion de dependencias
 
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final JwtService jwtService;
 
-  public AuthService(UserRepository userRepository) {
+  public AuthService(
+    UserRepository userRepository,
+    PasswordEncoder passwordEncoder,
+    JwtService jwtService
+  ) {
     this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.jwtService = jwtService;
   }
 
-  public User register(RegisterRequest request) {
+  /**
+   * Registers a new user and returns an AuthResponse containing a JWT token and the user object.
+   *
+   * @param request The RegisterRequest object containing the user's data.
+   *
+   * @return An AuthResponse object containing the JWT token and the user object.
+   *
+   * @throws RuntimeException If the user is already registered or the password is invalid.
+   */
+  public AuthResponse register(RegisterRequest request) {
     //Verificamos que no esté registrado
 
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -28,13 +47,17 @@ public class AuthService {
     User newUser = User.builder()
       .name(request.getName())
       .email(request.getEmail())
-      .password(request.getPassword())
+      .password(passwordEncoder.encode(request.getPassword()))
       .career(request.getCareer())
       .currentSemester(request.getCurrentSemester())
       .role(Role.STUDENT)
       .build();
 
-    return userRepository.save(newUser);
+    User registeredUser = userRepository.save(newUser);
+
+    String jwtToken = jwtService.generateToken(registeredUser.getEmail());
+
+    return AuthResponse.builder().token(jwtToken).user(registeredUser).build();
   }
 
   /**
@@ -48,16 +71,19 @@ public class AuthService {
    * @throws RuntimeException If the user is not found or the password is invalid.
    */
 
-  public User login(String email, String password) {
+  public AuthResponse login(String email, String password) {
     Optional<User> userOpt = userRepository.findByEmail(email);
 
     if (userOpt.isEmpty()) {
       throw new RuntimeException("User not found");
     }
     User user = userOpt.get();
-    if (!user.getPassword().equals(password)) {
+    if (!passwordEncoder.matches(password, user.getPassword())) {
       throw new RuntimeException("Invalid password");
     }
-    return user;
+    
+    String jwtToken = jwtService.generateToken(user.getEmail());
+
+    return AuthResponse.builder().token(jwtToken).user(user).build();
   }
 }
