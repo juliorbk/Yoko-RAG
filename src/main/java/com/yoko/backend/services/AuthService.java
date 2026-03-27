@@ -2,10 +2,9 @@ package com.yoko.backend.services;
 
 import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.RegisterRequest;
-import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.entities.User;
+import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.UserRepository;
-import java.util.Optional;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ public class AuthService {
 
   //inyeccion de dependencias
 
+  private final EmailService emailService;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
@@ -22,11 +22,13 @@ public class AuthService {
   public AuthService(
     UserRepository userRepository,
     PasswordEncoder passwordEncoder,
-    JwtService jwtService
+    JwtService jwtService,
+    EmailService emailService
   ) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
+    this.emailService = emailService;
   }
 
   /**
@@ -55,6 +57,10 @@ public class AuthService {
       .build();
 
     User registeredUser = userRepository.save(newUser);
+    emailService.sendWelcomeEmail(
+      registeredUser.getEmail(),
+      registeredUser.getName()
+    );
 
     String jwtToken = jwtService.generateToken(registeredUser.getEmail());
 
