@@ -1,5 +1,6 @@
 package com.yoko.backend.controllers;
 
+import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.LoginRequest;
 import com.yoko.backend.DTOs.RegisterRequest;
 import com.yoko.backend.entities.User;
@@ -30,22 +31,29 @@ public class AuthController {
   public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
     System.out.println(request.toString());
     try {
-      User registeredUser = authService.register(request);
+      AuthResponse registeredUser = authService.register(request);
       return ResponseEntity.ok(registeredUser); // Retorna el usuario registrado 201
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage()); // Retorna un error 400
     }
   }
 
+  /**
+   * Logs in a user using the provided email and password.
+   * @param request The LoginRequest object containing the user's email and password.
+   * @return An AuthResponse object containing the JWT token and the user object.
+   * @throws RuntimeException If the user is not found or the password is invalid.
+   */
+
   @PostMapping("/login")
   @Operation(summary = "Login a user")
   public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     try {
-      User loggedUser = authService.login(
+      AuthResponse loggedUser = authService.login(
         request.getEmail(),
         request.getPassword()
       );
-      return ResponseEntity.ok(loggedUser); // Retorna el usuario registrado 201
+      return ResponseEntity.ok(loggedUser);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage()); // Retorna un error 400
     }
