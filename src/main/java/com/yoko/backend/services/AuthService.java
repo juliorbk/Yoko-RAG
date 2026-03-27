@@ -6,6 +6,7 @@ import com.yoko.backend.entities.Role;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.UserRepository;
 import java.util.Optional;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -67,21 +68,24 @@ public class AuthService {
    * @param password Password of the user to log in.
    *
    * @return The user object if the login is successful.
+   * @throws UserNotFoundException
+   * @throws InvalidPasswordException
    *
    * @throws RuntimeException If the user is not found or the password is invalid.
    */
 
-  public AuthResponse login(String email, String password) {
-    Optional<User> userOpt = userRepository.findByEmail(email);
+  public AuthResponse login(String email, String password)
+    throws BadCredentialsException {
+    User user = userRepository
+      .findByEmail(email)
+      .orElseThrow(() ->
+        new BadCredentialsException("Invalid Email or Password")
+      );
 
-    if (userOpt.isEmpty()) {
-      throw new RuntimeException("User not found");
-    }
-    User user = userOpt.get();
     if (!passwordEncoder.matches(password, user.getPassword())) {
-      throw new RuntimeException("Invalid password");
+      throw new BadCredentialsException("Invalid Email or Password");
     }
-    
+
     String jwtToken = jwtService.generateToken(user.getEmail());
 
     return AuthResponse.builder().token(jwtToken).user(user).build();

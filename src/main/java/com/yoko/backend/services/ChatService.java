@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChatService {
 
-  private static final int MAX_HISTORY = 10; // mensajes recientes a enviar al LLM
+  private static final int MAX_HISTORY = 20; // mensajes recientes a enviar al LLM
   private static final int TOP_K = 3; // fragmentos RAG a recuperar
   private static final double SIMILARITY_THRESHOLD = 0.65; // umbral mínimo de relevancia
   //Inyeccion de dependencias
