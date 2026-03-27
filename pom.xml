@@ -142,6 +142,12 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <dependency>
+    <groupId>com.github.bucket4j</groupId>
+    <artifactId>bucket4j-core</artifactId>
+    <version>8.10.1</version>
+</dependency>
       <!--
         ✅ FIX 7: spring-ai-transformers-spring-boot-starter NO va aquí.
            El BOM ya gestiona la versión de spring-ai-starter-model-transformers.
