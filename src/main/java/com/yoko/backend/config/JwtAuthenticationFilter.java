@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
@@ -41,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 1. Si no hay token, lo dejamos pasar al siguiente filtro (y SecurityConfig lo rebotará con el 403)
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      System.out.println("No hay token");
+      log.debug("Received header {}" + authHeader);
       filterChain.doFilter(request, response);
       return;
     }
@@ -49,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 2. Extraemos el token (quitando los 7 caracteres de "Bearer ")
     jwt = authHeader.substring(7);
     userEmail = jwtService.extractUsername(jwt);
-    System.out.println("Email:" + userEmail);
+    log.info("Logged in successfully user {}: " + userEmail);
 
     // 3. Si hay un correo en el token y el usuario aún no está autenticado en este hilo
     if (

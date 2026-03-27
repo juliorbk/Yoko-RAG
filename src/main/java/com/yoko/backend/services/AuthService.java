@@ -2,7 +2,7 @@ package com.yoko.backend.services;
 
 import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.RegisterRequest;
-import com.yoko.backend.entities.Role;
+import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.UserRepository;
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class AuthService {
       .password(passwordEncoder.encode(request.getPassword()))
       .career(request.getCareer())
       .currentSemester(request.getCurrentSemester())
-      .role(Role.STUDENT)
+      .role(UserRole.STUDENT)
       .build();
 
     User registeredUser = userRepository.save(newUser);
