@@ -4,5 +4,5 @@ public enum Role {
   SYSTEM,
   USER,
   ASSISTANT,
-  PROFESSOR,
+  STUDENT,
 }

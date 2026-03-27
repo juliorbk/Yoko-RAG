@@ -2,10 +2,12 @@ package com.yoko.backend.controllers;
 
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
-import com.yoko.backend.entities.Student;
+import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.ChatSessionRepository;
-import com.yoko.backend.repositories.StudentRepository;
+import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.ChatService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -15,47 +17,40 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/sessions")
 @CrossOrigin(origins = "*")
+@Tag(name = "Chat")
 public class ChatController {
 
   private final ChatService chatService;
   private final ChatSessionRepository sessionRepository;
-  private final StudentRepository studentRepository;
+  private final UserRepository userRepository;
 
   //Inyeccion de dependencias
   public ChatController(
     ChatService chatService,
     ChatSessionRepository sessionRepository,
-    StudentRepository studentRepository
+    UserRepository userRepository
   ) {
     this.chatService = chatService;
     this.sessionRepository = sessionRepository;
-    this.studentRepository = studentRepository;
+    this.userRepository = userRepository;
   }
 
   //Endpoint para nuevo chat
 
-  @PostMapping("/find-or-create")
-  public ResponseEntity<Student> findOrCreate(@RequestBody Student student) {
-    return studentRepository
-      .findByEmail(student.getEmail())
-      .map(ResponseEntity::ok)
-      .orElseGet(() -> ResponseEntity.ok(studentRepository.save(student)));
-  }
-
-  @PostMapping("/{studentId}")
-  public ResponseEntity<ChatSession> newChat(@PathVariable UUID studentId) {
-    Student student = studentRepository
-      .findById(studentId)
+  @PostMapping("/{userId}")
+  @Operation(summary = "Create a new chat session")
+  public ResponseEntity<ChatSession> newChat(@PathVariable UUID userId) {
+    User user = userRepository
+      .findById(userId)
       .orElseThrow(() -> new RuntimeException("Student id not found"));
 
     ChatSession newSession = ChatSession.builder()
-      .student(student)
+      .user(user)
       .title("New chat with Yoko :)")
       .build();
 
@@ -64,6 +59,7 @@ public class ChatController {
 
   //Endpoint para enviar mensaje
   @PostMapping("/{chatId}/enviar")
+  @Operation(summary = "Send a message")
   public ResponseEntity<String> sendMessage(
     @PathVariable UUID chatId,
     @RequestBody String message
@@ -73,6 +69,7 @@ public class ChatController {
   }
 
   @GetMapping("/{chatId}/historial")
+  @Operation(summary = "Get chat history")
   public ResponseEntity<List<Message>> getHistory(@PathVariable UUID chatId) {
     List<Message> history = chatService.recentHistory(chatId);
     return ResponseEntity.ok(history);

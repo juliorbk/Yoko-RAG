@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface ChatSessionRepository
   extends JpaRepository<ChatSession, UUID>
 {
-  List<ChatSession> findByStudentIdOrderByCreatedAtDesc(UUID studentId);
+  List<ChatSession> findByUserIdOrderByCreatedAtDesc(UUID UserId);
 }
+// findByStudentIdOrderByCreatedAtDesc old function

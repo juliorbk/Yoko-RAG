@@ -1,5 +1,6 @@
 package com.yoko.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -68,6 +69,7 @@ public class Message {
    */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "chat_session_id", nullable = false)
+  @JsonIgnore
   private ChatSession chatSession;
 
   /**

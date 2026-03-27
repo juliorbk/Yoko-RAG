@@ -55,12 +55,12 @@ public class ChatSession {
    * Loaded lazily to avoid fetching the full student record on every
    * session query.
    *
-   * The FK column "student_id" is required — every session
+   * The FK column "user_id" is required — every session
    * must be associated with a student.
    */
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "student_id", nullable = false)
-  private Student student;
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
   /**
    * The list of messages that belong to this session.
