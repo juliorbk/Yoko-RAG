@@ -65,6 +65,7 @@ public class ChatController {
     @RequestBody String message
   ) {
     String response = chatService.handleMessage(chatId, message);
+    
     return ResponseEntity.ok(response);
   }
 

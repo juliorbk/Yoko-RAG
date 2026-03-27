@@ -43,11 +43,31 @@ public class ChatService {
 
   //funcion para procesar mensaje
 
+  /**
+   * Processes a message from the user, saving it to the database and generating a title for the chat session if necessary.
+   * Then, it retrieves the most recent messages from the database, and uses them to generate a prompt for the AI.
+   * The prompt is built by concatenating the most recent messages, and the context extracted from the database using pgvector.
+   * Finally, it calls the AI with the prompt and the user's message, and saves the response to the database.
+   * @param sessionId the ID of the chat session
+   * @param userText the message from the user
+   * @return the response from the AI
+   */
   public String handleMessage(UUID sessionId, String userText) {
     //Obtenemos la sesión
     ChatSession session = sessionRepository
       .findById(sessionId)
       .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
+
+    //Acá generamos llamamos a generateChatTitle para generar el titulo
+    if (session.getTitle().equals("New chat with Yoko :)")) {
+      try {
+        String newTitle = generateChatTitle(userText);
+        session.setTitle(newTitle);
+        sessionRepository.save(session);
+      } catch (Exception e) {
+        System.out.println("Can't generate title" + e.getMessage());
+      }
+    }
 
     //Mostramos los ultimos mensajes
     List<Message> historyBD =
@@ -140,5 +160,16 @@ public class ChatService {
 
   public List<Message> recentHistory(UUID sessionId) {
     return messageRepository.findByChatSessionIdOrderByCreatedAtAsc(sessionId);
+  }
+
+  //Nueva funcion para generar titulo del chat en base al primer mensaje
+  public String generateChatTitle(String firstMessage) {
+    String prompt =
+      " Actúa como un resumidor. Genera un título muy corto (máximo 4 a 5 palabras) para este mensaje. " +
+      "Debe ser directo, en el mismo idioma del mensaje, sin comillas, sin puntos finales y sin introducciones. " +
+      "Mensaje: " +
+      firstMessage;
+
+    return chatClient.prompt(prompt).call().content();
   }
 }
