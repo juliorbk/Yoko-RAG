@@ -22,6 +22,7 @@ import lombok.*;
 @NoArgsConstructor // Lombok: required by JPA (no-arg constructor)
 @AllArgsConstructor // Lombok: constructor with all fields (used with @Builder)
 @Builder // Lombok: enables the builder pattern → Message.builder().content("...").build()
+@EqualsAndHashCode(of = "id")
 public class Message {
 
   /**
@@ -47,7 +48,7 @@ public class Message {
    */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Role role;
+  private MessageRole role;
 
   /**
    * Timestamp of when this message was created.

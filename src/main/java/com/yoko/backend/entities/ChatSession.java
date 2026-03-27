@@ -1,5 +1,6 @@
 package com.yoko.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ import lombok.*;
 @NoArgsConstructor // Lombok: required by JPA (no-arg constructor)
 @AllArgsConstructor // Lombok: constructor with all fields (used with @Builder)
 @Builder // Lombok: enables → ChatSession.builder().title("...").build()
+@EqualsAndHashCode(of = "id")
 public class ChatSession {
 
   /**
@@ -60,6 +62,7 @@ public class ChatSession {
    */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
+  @JsonIgnore
   private User user;
 
   /**

@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
 public class User implements UserDetails {
 
   @Override
@@ -62,7 +63,7 @@ public class User implements UserDetails {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Role role;
+  private UserRole role;
 
   private String career;
 
