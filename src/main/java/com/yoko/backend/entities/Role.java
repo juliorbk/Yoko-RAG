@@ -5,4 +5,5 @@ public enum Role {
   USER,
   ASSISTANT,
   STUDENT,
+  ADMIN
 }

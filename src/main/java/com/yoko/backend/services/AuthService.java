@@ -4,7 +4,6 @@ import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.RegisterRequest;
 import com.yoko.backend.entities.Role;
 import com.yoko.backend.entities.User;
-import com.yoko.backend.exceptions.UserNotFoundException;
 import com.yoko.backend.repositories.UserRepository;
 import java.util.Optional;
 import org.springframework.security.authentication.BadCredentialsException;

@@ -7,6 +7,7 @@ import com.yoko.backend.entities.User;
 import com.yoko.backend.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,9 @@ public class AuthController {
 
   @PostMapping("/register")
   @Operation(summary = "Register a new user")
-  public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+  public ResponseEntity<?> register(
+    @Valid @RequestBody RegisterRequest request
+  ) {
     System.out.println(request.toString());
     try {
       AuthResponse registeredUser = authService.register(request);
@@ -47,7 +50,7 @@ public class AuthController {
 
   @PostMapping("/login")
   @Operation(summary = "Login a user")
-  public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
     try {
       AuthResponse loggedUser = authService.login(
         request.getEmail(),
