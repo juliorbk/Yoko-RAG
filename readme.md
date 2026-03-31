@@ -16,7 +16,7 @@ El núcleo inteligente de **Yoko**, un asistente académico impulsado por Inteli
 
 La arquitectura sigue estrictamente el principio de separación de responsabilidades para garantizar la escalabilidad y el fácil mantenimiento:
 
-```text
+```
 src/main/java/com/yoko/backend/
 ├── config/         # Configuraciones globales (CORS, Swagger, Beans)
 ├── controllers/    # Endpoints REST (Auth, Chat, Data Entry)
@@ -27,7 +27,7 @@ src/main/java/com/yoko/backend/
 ├── security/       # Filtros JWT, validación de tokens y configuración de accesos
 ├── services/       # Lógica de negocio principal (ChatService, AuthService) aislando a los controladores
 └── YokoBackendApplication.java  # Clase principal de ejecución
-
+```
 🛠️ Requisitos Previos
 Java Development Kit (JDK) 17 o superior.
 
