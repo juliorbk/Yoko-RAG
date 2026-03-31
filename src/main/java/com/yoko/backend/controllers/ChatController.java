@@ -62,7 +62,7 @@ public class ChatController {
   }
 
   //Endpoint para enviar mensaje
-  @PostMapping("/{chatId}/enviar")
+  @PostMapping("/{chatId}/messages")
   @Operation(summary = "Send a message")
   public ResponseEntity<String> sendMessage(
     @PathVariable UUID chatId,
@@ -73,7 +73,7 @@ public class ChatController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping("/{chatId}/historial")
+  @GetMapping("/{chatId}")
   @Operation(summary = "Get chat history")
   public ResponseEntity<List<Message>> getHistory(@PathVariable UUID chatId) {
     List<Message> history = chatService.recentHistory(chatId);
