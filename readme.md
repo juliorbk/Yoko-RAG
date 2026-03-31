@@ -1,46 +1,81 @@
-# 🤖 Yoko Backend - University AI Assistant
 
-Este repositorio contiene el código fuente del backend de **Yoko**, un chatbot impulsado por Inteligencia Artificial diseñado para asistir a los estudiantes universitarios con sus consultas académicas y administrativas.
+# Yoko AI - Backend 🐊
 
-Este sistema está construido bajo una arquitectura **RAG (Retrieval-Augmented Generation)**, lo que permite al modelo de lenguaje (LLM) generar respuestas precisas y contextualizadas basadas exclusivamente en la base de conocimientos oficial de la universidad.
+El núcleo inteligente de **Yoko**, un asistente académico impulsado por Inteligencia Artificial diseñado para optimizar los procesos administrativos y estudiantiles en la **UNEG**. Construido con Java y Spring Boot, este backend gestiona la lógica de negocio, la seguridad, el almacenamiento vectorial y la comunicación con modelos de lenguaje de última generación.
 
 ## 🚀 Tecnologías Principales
 
-- **Framework:** Java 21+ / Spring Boot 4.x
-- **Base de Datos Relacional:** PostgreSQL (Historial de sesiones y usuarios)
-- **Base de Datos Vectorial:** pgvector (Búsqueda semántica de documentos y FAQs)
-- **Integración IA:** Spring AI / LangChain4j
+* **Framework:** Java 17+ / Spring Boot 3.x
+* **Inteligencia Artificial:** Spring AI integrado con LLaMA 3.1 (vía Groq)
+* **Base de Datos:** PostgreSQL con la extensión `pgvector` para Búsqueda Semántica y RAG (Generación Aumentada por Recuperación)
+* **Seguridad:** Spring Security con autenticación basada en JWT (JSON Web Tokens)
+* **Documentación de API:** Swagger / OpenAPI
+* **Gestión de Dependencias:** Maven
 
+## 📂 Estructura del Proyecto
 
-## ⚙️ Arquitectura
+La arquitectura sigue estrictamente el principio de separación de responsabilidades para garantizar la escalabilidad y el fácil mantenimiento:
 
-El backend expone una API REST consumible por clientes web e implementa un flujo de procesamiento que incluye:
+```text
+src/main/java/com/yoko/backend/
+├── config/         # Configuraciones globales (CORS, Swagger, Beans)
+├── controllers/    # Endpoints REST (Auth, Chat, Data Entry)
+├── dtos/           # Data Transfer Objects (ej. MessageRequest, AuthResponse)
+├── entities/       # Modelos de base de datos JPA (User, ChatSession, Message)
+├── enums/          # Enumeraciones (Roles de usuario, estados)
+├── repositories/   # Interfaces de Spring Data JPA
+├── security/       # Filtros JWT, validación de tokens y configuración de accesos
+├── services/       # Lógica de negocio principal (ChatService, AuthService) aislando a los controladores
+└── YokoBackendApplication.java  # Clase principal de ejecución
+🛠️ Requisitos Previos
+Java Development Kit (JDK) 17 o superior.
 
-1.  **Gestión de Sesiones:** Mantenimiento de memoria a corto plazo por hilo de conversación.
-2.  **Búsqueda Semántica:** Vectorización de consultas para recuperar el contexto institucional más relevante.
-3.  **Generación Aumentada:** Orquestación de _prompts_ combinando el historial del usuario, el contexto recuperado y las directrices del sistema antes de consultar al LLM.
+Maven instalado en el sistema.
 
-```com.yoko.backend
-├── YokoApplication.java            # Archivo principal que arranca la app
-├── config/                         # Configuraciones globales
-│   ├── AiConfig.java               # Configuración del LLM y Vector DB
-│   └── CorsConfig.java             # Para permitir que tu frontend web se conecte
-├── controllers/                    # Los endpoints REST (la cara de la API)
-│   ├── ChatController.java         # Recibe las peticiones de los mensajes
-│   └── StudentController.java      # Maneja la info del estudiante
-├── dtos/                           # Data Transfer Objects
-│   ├── request/                    # Lo que el frontend envía (ej. MessageRequest)
-│   └── response/                   # Lo que devuelves (ej. ChatResponse)
-├── entities/                       # El modelado de la base de datos
-│   ├── Student.java
-│   ├── ChatSession.java
-│   ├── Message.java
-│   └── FaqDocument.java            # La tabla vectorial
-├── exceptions/                     # Manejo de errores
-│   └── GlobalExceptionHandler.java # Para devolver JSONs limpios si algo falla
-├── repositories/                   # Comunicación con PostgreSQL (Spring Data JPA)
-│   ├── ChatSessionRepository.java
-│   └── MessageRepository.java
-└── services/                       # El "cerebro" donde ocurre la magia
-    ├── ChatService.java            # Lógica de guardar mensajes y recuperar historial
-    └── YokoRagService.java         # Búsqueda semántica + armado de prompt para la IA ```
+Docker (recomendado para levantar la base de datos con soporte vectorial de forma rápida).
+
+Una API Key válida de Groq.
+
+⚙️ Configuración y Ejecución
+1. Levantar la Base de Datos (PostgreSQL + pgvector)
+Para que Yoko pueda buscar información en los reglamentos y guías, la base de datos necesita manejar dimensiones vectoriales. Usa Docker para levantar el entorno:
+
+Bash
+docker run -d \
+  --name yoko-db \
+  -e POSTGRES_PASSWORD=tu_password \
+  -e POSTGRES_DB=yoko_db \
+  -p 5432:5432 \
+  ankane/pgvector
+Una vez creado el contenedor, es crucial activar la extensión vectorial ingresando al mismo:
+
+Bash
+docker exec -it yoko-db psql -U postgres -d yoko_db -c "CREATE EXTENSION IF NOT EXISTS vector;"
+2. Variables de Entorno
+Configura tu archivo src/main/resources/application.properties con tus credenciales locales:
+
+Properties
+# Conexión a Base de Datos
+spring.datasource.url=jdbc:postgresql://localhost:5432/yoko_db
+spring.datasource.username=postgres
+spring.datasource.password=tu_password
+spring.jpa.hibernate.ddl-auto=update
+
+# Seguridad JWT
+jwt.secret=TU_CLAVE_SECRETA_MUY_SEGURA_AQUI
+
+# Configuración de IA (Groq)
+spring.ai.openai.api-key=TU_API_KEY_DE_GROQ
+spring.ai.openai.chat.options.model=llama-3.1-8b-instant
+3. Compilar y Ejecutar
+Desde la raíz del proyecto en tu terminal, ejecuta los siguientes comandos:
+
+Bash
+mvn clean install
+mvn spring-boot:run
+El servidor se iniciará en el puerto 8080.
+
+📡 Documentación de la API
+Una vez que el servidor esté corriendo, puedes explorar y probar todos los endpoints disponibles (incluyendo la creación de chats y el envío de mensajes) a través de la interfaz visual de Swagger UI ingresando a:
+
+http://localhost:8080/swagger-ui/index.html
