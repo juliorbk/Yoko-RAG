@@ -3,7 +3,6 @@ package com.yoko.backend.controllers;
 import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.LoginRequest;
 import com.yoko.backend.DTOs.RegisterRequest;
-import com.yoko.backend.entities.User;
 import com.yoko.backend.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*") // Permite peticiones desde tu frontend
+@CrossOrigin(origins = "http://localhost:5173") // Permite peticiones desde tu frontend
 @Tag(name = "Authentication", description = "Authentication endpoints")
 public class AuthController {
 

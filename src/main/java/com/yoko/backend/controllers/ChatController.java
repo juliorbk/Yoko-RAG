@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/sessions")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Chat")
 public class ChatController {
 
@@ -81,6 +81,7 @@ public class ChatController {
   }
 
   @GetMapping("/{userId}/chats")
+  @Operation(summary = "Get user's chats")
   public ResponseEntity<Page<ChatSession>> getChats(
     @PathVariable UUID userId,
     @RequestParam(defaultValue = "0") int page,
