@@ -2,7 +2,6 @@ package com.yoko.backend.controllers;
 
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
-import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.ChatService;
@@ -49,16 +48,9 @@ public class ChatController {
   @PostMapping("/{userId}")
   @Operation(summary = "Create a new chat session")
   public ResponseEntity<ChatSession> newChat(@PathVariable UUID userId) {
-    User user = userRepository
-      .findById(userId)
-      .orElseThrow(() -> new RuntimeException("Student id not found"));
+    ChatSession newSession = chatService.createChatSession(userId);
 
-    ChatSession newSession = ChatSession.builder()
-      .user(user)
-      .title("New chat with Yoko :)")
-      .build();
-
-    return ResponseEntity.ok(sessionRepository.save(newSession));
+    return ResponseEntity.ok(newSession);
   }
 
   //Endpoint para enviar mensaje
@@ -88,8 +80,6 @@ public class ChatController {
     @RequestParam(defaultValue = "10") int size
   ) {
     Pageable pageable = PageRequest.of(page, size);
-    Page<ChatSession> chats =
-      sessionRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
-    return ResponseEntity.ok(chats);
+    return ResponseEntity.ok(chatService.getUserChats(userId, pageable));
   }
 }

@@ -3,9 +3,11 @@ package com.yoko.backend.services;
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.MessageRole;
+import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
+import com.yoko.backend.repositories.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -15,6 +17,8 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,19 +31,39 @@ public class ChatService {
 
   private final ChatSessionRepository sessionRepository;
   private final MessageRepository messageRepository;
+  private final UserRepository userRepository;
   private final VectorStore vectorStore;
   private final ChatClient chatClient;
 
   public ChatService(
     ChatSessionRepository sessionRepository,
     MessageRepository messageRepository,
+    UserRepository userRepository,
     VectorStore vectorStore,
     ChatClient chatClient
   ) {
     this.sessionRepository = sessionRepository;
     this.messageRepository = messageRepository;
+    this.userRepository = userRepository;
     this.vectorStore = vectorStore;
     this.chatClient = chatClient;
+  }
+
+  public ChatSession createChatSession(UUID userId) {
+    User user = userRepository
+      .findById(userId)
+      .orElseThrow(() -> new RuntimeException("Student id not found"));
+
+    ChatSession newSession = ChatSession.builder()
+      .user(user)
+      .title("New chat with Yoko :)")
+      .build();
+    return sessionRepository.save(newSession);
+  }
+
+  // NUEVO MÉTODO: También movemos la paginación aquí por limpieza
+  public Page<ChatSession> getUserChats(UUID userId, Pageable pageable) {
+    return sessionRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
   }
 
   //funcion para procesar mensaje
