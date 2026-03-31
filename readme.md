@@ -27,6 +27,7 @@ src/main/java/com/yoko/backend/
 ├── security/       # Filtros JWT, validación de tokens y configuración de accesos
 ├── services/       # Lógica de negocio principal (ChatService, AuthService) aislando a los controladores
 └── YokoBackendApplication.java  # Clase principal de ejecución
+
 🛠️ Requisitos Previos
 Java Development Kit (JDK) 17 o superior.
 
@@ -40,7 +41,6 @@ Una API Key válida de Groq.
 1. Levantar la Base de Datos (PostgreSQL + pgvector)
 Para que Yoko pueda buscar información en los reglamentos y guías, la base de datos necesita manejar dimensiones vectoriales. Usa Docker para levantar el entorno:
 
-Bash
 docker run -d \
   --name yoko-db \
   -e POSTGRES_PASSWORD=tu_password \
@@ -49,7 +49,6 @@ docker run -d \
   ankane/pgvector
 Una vez creado el contenedor, es crucial activar la extensión vectorial ingresando al mismo:
 
-Bash
 docker exec -it yoko-db psql -U postgres -d yoko_db -c "CREATE EXTENSION IF NOT EXISTS vector;"
 2. Variables de Entorno
 Configura tu archivo src/main/resources/application.properties con tus credenciales locales:
@@ -70,7 +69,6 @@ spring.ai.openai.chat.options.model=llama-3.1-8b-instant
 3. Compilar y Ejecutar
 Desde la raíz del proyecto en tu terminal, ejecuta los siguientes comandos:
 
-Bash
 mvn clean install
 mvn spring-boot:run
 El servidor se iniciará en el puerto 8080.
