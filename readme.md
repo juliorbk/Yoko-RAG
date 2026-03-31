@@ -5,7 +5,7 @@ El núcleo inteligente de **Yoko**, un asistente académico impulsado por Inteli
 
 ## 🚀 Tecnologías Principales
 
-* **Framework:** Java 17+ / Spring Boot 3.x
+* **Framework:** Java 21+ / Spring Boot 3.x
 * **Inteligencia Artificial:** Spring AI integrado con LLaMA 3.1 (vía Groq)
 * **Base de Datos:** PostgreSQL con la extensión `pgvector` para Búsqueda Semántica y RAG (Generación Aumentada por Recuperación)
 * **Seguridad:** Spring Security con autenticación basada en JWT (JSON Web Tokens)
