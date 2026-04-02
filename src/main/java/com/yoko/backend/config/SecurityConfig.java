@@ -91,7 +91,8 @@ public class SecurityConfig {
     configuration.setAllowedOrigins(
       List.of(
         "http://localhost:5173", // Tu PC local
-        "https://yoko-frontend.vercel.app", // Tu URL real de Vercel
+        "yoko-frontend-theta.vercel.app",
+        "yoko-frontend-2p76qjtll-jsuarez04s-projects.vercel.app", // Tu URL real de Vercel
         "https://c6d2-135-136-5-113.ngrok-free.app" // Si usas Ngrok para probar
       )
     );
