@@ -4,9 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# Archivos de entorno local
-application-local.properties
-
 ### STS ###
 .apt_generated
 .classpath
