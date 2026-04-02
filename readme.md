@@ -5,7 +5,7 @@ El núcleo inteligente de **Yoko**, un asistente académico impulsado por Inteli
 
 ## 🚀 Tecnologías Principales
 
-* **Framework:** Java 17+ / Spring Boot 3.x
+* **Framework:** Java 21+ / Spring Boot 3.x
 * **Inteligencia Artificial:** Spring AI integrado con LLaMA 3.1 (vía Groq)
 * **Base de Datos:** PostgreSQL con la extensión `pgvector` para Búsqueda Semántica y RAG (Generación Aumentada por Recuperación)
 * **Seguridad:** Spring Security con autenticación basada en JWT (JSON Web Tokens)
@@ -16,7 +16,7 @@ El núcleo inteligente de **Yoko**, un asistente académico impulsado por Inteli
 
 La arquitectura sigue estrictamente el principio de separación de responsabilidades para garantizar la escalabilidad y el fácil mantenimiento:
 
-```text
+```
 src/main/java/com/yoko/backend/
 ├── config/         # Configuraciones globales (CORS, Swagger, Beans)
 ├── controllers/    # Endpoints REST (Auth, Chat, Data Entry)
@@ -27,6 +27,7 @@ src/main/java/com/yoko/backend/
 ├── security/       # Filtros JWT, validación de tokens y configuración de accesos
 ├── services/       # Lógica de negocio principal (ChatService, AuthService) aislando a los controladores
 └── YokoBackendApplication.java  # Clase principal de ejecución
+```
 🛠️ Requisitos Previos
 Java Development Kit (JDK) 17 o superior.
 
@@ -40,7 +41,6 @@ Una API Key válida de Groq.
 1. Levantar la Base de Datos (PostgreSQL + pgvector)
 Para que Yoko pueda buscar información en los reglamentos y guías, la base de datos necesita manejar dimensiones vectoriales. Usa Docker para levantar el entorno:
 
-Bash
 docker run -d \
   --name yoko-db \
   -e POSTGRES_PASSWORD=tu_password \
@@ -49,7 +49,6 @@ docker run -d \
   ankane/pgvector
 Una vez creado el contenedor, es crucial activar la extensión vectorial ingresando al mismo:
 
-Bash
 docker exec -it yoko-db psql -U postgres -d yoko_db -c "CREATE EXTENSION IF NOT EXISTS vector;"
 2. Variables de Entorno
 Configura tu archivo src/main/resources/application.properties con tus credenciales locales:
@@ -70,7 +69,6 @@ spring.ai.openai.chat.options.model=llama-3.1-8b-instant
 3. Compilar y Ejecutar
 Desde la raíz del proyecto en tu terminal, ejecuta los siguientes comandos:
 
-Bash
 mvn clean install
 mvn spring-boot:run
 El servidor se iniciará en el puerto 8080.
