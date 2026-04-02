@@ -7,6 +7,7 @@ import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -81,5 +83,12 @@ public class ChatController {
   ) {
     Pageable pageable = PageRequest.of(page, size);
     return ResponseEntity.ok(chatService.getUserChats(userId, pageable));
+  }
+
+  @DeleteMapping("/{chatId}")
+  @Operation(summary = "Delete a chat session")
+  public ResponseEntity<?> deleteChat(@PathVariable @NotNull UUID chatId) {
+    sessionRepository.deleteById(chatId);
+    return ResponseEntity.ok().build();
   }
 }
