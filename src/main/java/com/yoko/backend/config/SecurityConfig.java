@@ -91,8 +91,7 @@ public class SecurityConfig {
     configuration.setAllowedOrigins(
       List.of(
         "http://localhost:5173", // Tu PC local
-        "yoko-frontend-theta.vercel.app",
-        "yoko-frontend-2p76qjtll-jsuarez04s-projects.vercel.app", // Tu URL real de Vercel
+        "https://yoko-frontend-*.vercel.app",
         "https://c6d2-135-136-5-113.ngrok-free.app" // Si usas Ngrok para probar
       )
     );
@@ -103,7 +102,12 @@ public class SecurityConfig {
 
     // Es vital permitir "Authorization" para que el JWT pase el muro
     configuration.setAllowedHeaders(
-      Arrays.asList("Authorization", "Content-Type", "Cache-Control")
+      Arrays.asList(
+        "Authorization",
+        "Content-Type",
+        "Cache-Control",
+        "ngrok-skip-browser-warning"
+      )
     );
 
     configuration.setAllowCredentials(true);

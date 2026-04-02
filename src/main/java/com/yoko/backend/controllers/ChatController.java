@@ -26,23 +26,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/sessions")
-@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Chat")
 public class ChatController {
 
   private final ChatService chatService;
   private final ChatSessionRepository sessionRepository;
-  private final UserRepository userRepository;
 
   //Inyeccion de dependencias
   public ChatController(
     ChatService chatService,
-    ChatSessionRepository sessionRepository,
-    UserRepository userRepository
+    ChatSessionRepository sessionRepository
   ) {
     this.chatService = chatService;
     this.sessionRepository = sessionRepository;
-    this.userRepository = userRepository;
   }
 
   //Endpoint para nuevo chat

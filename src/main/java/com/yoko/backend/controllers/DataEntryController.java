@@ -1,7 +1,6 @@
 package com.yoko.backend.controllers;
 
 import java.util.List;
-import java.util.Map;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.http.ResponseEntity;
