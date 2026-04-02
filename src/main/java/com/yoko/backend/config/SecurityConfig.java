@@ -37,10 +37,13 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http)
     throws Exception {
     http
-      .cors(Customizer.withDefaults())
+      // 1. Un solo método para CORS apuntando a nuestra fuente
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      // 2. Un solo método para desactivar CSRF
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth ->
         auth
+          // Recursos estáticos y archivos comunes
           .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
           .permitAll()
           .requestMatchers(
@@ -53,7 +56,7 @@ public class SecurityConfig {
             "/favicon.ico"
           )
           .permitAll()
-          // 3. Endpoints públicos
+          // Endpoints públicos (Login, Registro, Swagger)
           .requestMatchers(
             "/api/auth/**",
             "/swagger-ui/**",
@@ -61,10 +64,10 @@ public class SecurityConfig {
             "/error"
           )
           .permitAll()
-          // 4. Endpoints protegidos por rol
+          // Endpoints de Administración
           .requestMatchers("/api/data-entry/**")
           .hasAuthority("ADMIN")
-          // 5. Todo lo demás requiere token
+          // Todo lo demás requiere token
           .anyRequest()
           .authenticated()
       )
@@ -80,15 +83,28 @@ public class SecurityConfig {
   }
 
   @Bean
-  CorsConfigurationSource corsConfigurationSource() {
+  public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:5173")); // El puerto de Vite
+
+    // 🚨 CONFIGURACIÓN DE ORIGENES PERMITIDOS
+    // Agrega aquí todas las URLs desde donde vas a abrir Yoko
+    configuration.setAllowedOrigins(
+      List.of(
+        "http://localhost:5173", // Tu PC local
+        "https://yoko-frontend.vercel.app", // Tu URL real de Vercel
+        "https://tu-url-de-ngrok.ngrok-free.app" // Si usas Ngrok para probar
+      )
+    );
+
     configuration.setAllowedMethods(
       Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
     );
+
+    // Es vital permitir "Authorization" para que el JWT pase el muro
     configuration.setAllowedHeaders(
-      Arrays.asList("Authorization", "Content-Type")
+      Arrays.asList("Authorization", "Content-Type", "Cache-Control")
     );
+
     configuration.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source =
