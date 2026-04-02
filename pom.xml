@@ -23,6 +23,12 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j-core</artifactId>
+      <version>8.10.1</version>
+    </dependency>
+
     <!-- ── WEB ─────────────────────────────────────────────────── -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -118,6 +124,8 @@
       <version>0.12.5</version>
       <scope>runtime</scope>
     </dependency>
+
+
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
