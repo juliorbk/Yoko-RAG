@@ -92,7 +92,7 @@ public class SecurityConfig {
       List.of(
         "http://localhost:5173", // Tu PC local
         "https://yoko-frontend.vercel.app", // Tu URL real de Vercel
-        "https://tu-url-de-ngrok.ngrok-free.app" // Si usas Ngrok para probar
+        "https://c6d2-135-136-5-113.ngrok-free.app" // Si usas Ngrok para probar
       )
     );
 
