@@ -86,13 +86,12 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
-    // 🚨 CONFIGURACIÓN DE ORIGENES PERMITIDOS
-    // Agrega aquí todas las URLs desde donde vas a abrir Yoko
-    configuration.setAllowedOrigins(
+    // 🚨 CAMBIO 1: Usar setAllowedOriginPatterns para que el asterisco funcione
+    configuration.setAllowedOriginPatterns(
       List.of(
-        "http://localhost:5173", // Tu PC local
-        "https://yoko-frontend-*.vercel.app",
-        "https://c6d2-135-136-5-113.ngrok-free.app" // Si usas Ngrok para probar
+        "http://localhost:5173", // PC local
+        "https://yoko-frontend-*.vercel.app", // Cubre todas las previews
+        "https://yoko-frontend-theta.vercel.app" // Tu dominio principal
       )
     );
 
@@ -100,13 +99,13 @@ public class SecurityConfig {
       Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
     );
 
-    // Es vital permitir "Authorization" para que el JWT pase el muro
+    // 🚨 CAMBIO 2: Agregar el header especial de LocalTunnel o usar "*"
     configuration.setAllowedHeaders(
       Arrays.asList(
         "Authorization",
         "Content-Type",
         "Cache-Control",
-        "ngrok-skip-browser-warning"
+        "Bypass-Tunnel-Reminder"
       )
     );
 

@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Ignorar credenciales locales
+application-local.properties
+
 ### STS ###
 .apt_generated
 .classpath
