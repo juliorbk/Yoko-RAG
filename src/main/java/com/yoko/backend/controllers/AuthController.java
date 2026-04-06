@@ -53,6 +53,7 @@ public class AuthController {
         request.getEmail(),
         request.getPassword()
       );
+      System.out.println(loggedUser);
       return ResponseEntity.ok(loggedUser);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage()); // Retorna un error 400

@@ -2,6 +2,7 @@ package com.yoko.backend.services;
 
 import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.RegisterRequest;
+import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.UserRepository;
@@ -64,7 +65,8 @@ public class AuthService {
 
     String jwtToken = jwtService.generateToken(registeredUser.getEmail());
 
-    return AuthResponse.builder().token(jwtToken).user(registeredUser).build();
+    System.out.println(AuthResponse.builder().token(jwtToken).build());
+    return AuthResponse.builder().token(jwtToken).build();
   }
 
   /**
@@ -93,7 +95,15 @@ public class AuthService {
     }
 
     String jwtToken = jwtService.generateToken(user.getEmail());
+    UserDTO userDTO = UserDTO.builder()
+      .id(user.getId())
+      .name(user.getName())
+      .email(user.getEmail())
+      .role(user.getRole())
+      .career(user.getCareer())
+      .currentSemester(user.getCurrentSemester())
+      .build();
 
-    return AuthResponse.builder().token(jwtToken).user(user).build();
+    return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
 }
