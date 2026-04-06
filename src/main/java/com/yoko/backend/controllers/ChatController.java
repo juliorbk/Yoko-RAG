@@ -30,15 +30,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChatController {
 
   private final ChatService chatService;
-  private final ChatSessionRepository sessionRepository;
 
   //Inyeccion de dependencias
-  public ChatController(
-    ChatService chatService,
-    ChatSessionRepository sessionRepository
-  ) {
+  public ChatController(ChatService chatService) {
     this.chatService = chatService;
-    this.sessionRepository = sessionRepository;
   }
 
   //Endpoint para nuevo chat
@@ -84,7 +79,7 @@ public class ChatController {
   @DeleteMapping("/{chatId}")
   @Operation(summary = "Delete a chat session")
   public ResponseEntity<?> deleteChat(@PathVariable @NotNull UUID chatId) {
-    sessionRepository.deleteById(chatId);
+    chatService.deleteChatSession(chatId);
     return ResponseEntity.ok().build();
   }
 }

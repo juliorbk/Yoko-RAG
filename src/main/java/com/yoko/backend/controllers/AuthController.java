@@ -7,6 +7,8 @@ import com.yoko.backend.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,13 +31,8 @@ public class AuthController {
   public ResponseEntity<?> register(
     @Valid @RequestBody RegisterRequest request
   ) {
-    System.out.println(request.toString());
-    try {
-      AuthResponse registeredUser = authService.register(request);
-      return ResponseEntity.ok(registeredUser); // Retorna el usuario registrado 201
-    } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().body(e.getMessage()); // Retorna un error 400
-    }
+    AuthResponse registeredUser = authService.register(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
   }
 
   /**
@@ -48,15 +45,10 @@ public class AuthController {
   @PostMapping("/login")
   @Operation(summary = "Login a user")
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-    try {
-      AuthResponse loggedUser = authService.login(
-        request.getEmail(),
-        request.getPassword()
-      );
-      System.out.println(loggedUser);
-      return ResponseEntity.ok(loggedUser);
-    } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().body(e.getMessage()); // Retorna un error 400
-    }
+    AuthResponse loggedUser = authService.login(
+      request.getEmail(),
+      request.getPassword()
+    );
+    return ResponseEntity.ok(loggedUser);
   }
 }

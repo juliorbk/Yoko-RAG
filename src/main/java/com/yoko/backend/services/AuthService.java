@@ -6,11 +6,13 @@ import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class AuthService {
 
   //inyeccion de dependencias
@@ -65,7 +67,7 @@ public class AuthService {
 
     String jwtToken = jwtService.generateToken(registeredUser.getEmail());
 
-    System.out.println(AuthResponse.builder().token(jwtToken).build());
+    log.debug("Registered user: " + registeredUser);
     return AuthResponse.builder().token(jwtToken).build();
   }
 
@@ -104,6 +106,7 @@ public class AuthService {
       .currentSemester(user.getCurrentSemester())
       .build();
 
+    log.debug("User logged in: " + user);
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
 }

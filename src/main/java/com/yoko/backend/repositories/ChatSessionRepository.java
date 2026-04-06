@@ -1,7 +1,6 @@
 package com.yoko.backend.repositories;
 
 import com.yoko.backend.entities.ChatSession;
-
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
