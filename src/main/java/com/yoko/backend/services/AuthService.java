@@ -95,10 +95,9 @@ public class AuthService {
     if (!passwordEncoder.matches(password, user.getPassword())) {
       throw new BadCredentialsException("Invalid Email or Password");
     }
-
+    
     String jwtToken = jwtService.generateToken(user.getEmail());
     UserDTO userDTO = UserDTO.builder()
-      .id(user.getId())
       .name(user.getName())
       .email(user.getEmail())
       .role(user.getRole())
@@ -106,7 +105,7 @@ public class AuthService {
       .currentSemester(user.getCurrentSemester())
       .build();
 
-    log.debug("User logged in: " + user);
+    log.debug("User logged in: " + userDTO);
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
 }

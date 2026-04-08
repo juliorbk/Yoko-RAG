@@ -37,13 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     FilterChain filterChain
   ) throws ServletException, IOException {
     final String authHeader = request.getHeader("Authorization");
-    System.out.println("Header:" + authHeader);
     final String jwt;
     final String userEmail;
 
     // 1. Si no hay token, lo dejamos pasar al siguiente filtro (y SecurityConfig lo rebotará con el 403)
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      log.debug("Received header {}" + authHeader);
+      log.debug("Received header {}", authHeader);
       filterChain.doFilter(request, response);
       return;
     }
@@ -51,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 2. Extraemos el token (quitando los 7 caracteres de "Bearer ")
     jwt = authHeader.substring(7);
     userEmail = jwtService.extractUsername(jwt);
-    log.info("Logged in successfully user {}: " + userEmail);
+    log.info("Logged in successfully user: {}", userEmail);
 
     // 3. Si hay un correo en el token y el usuario aún no está autenticado en este hilo
     if (
@@ -65,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       // Si el token es válido, creamos el "Pase VIP" y lo guardamos en el contexto
       if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-        System.out.println("Token valido");
+        log.debug("Token valido");
         UsernamePasswordAuthenticationToken authToken =
           new UsernamePasswordAuthenticationToken(
             userDetails,

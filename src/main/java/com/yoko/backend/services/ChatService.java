@@ -4,7 +4,6 @@ import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.MessageRole;
 import com.yoko.backend.entities.User;
-import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
@@ -33,7 +32,7 @@ public class ChatService {
   private static final String SYSTEM_PROMPT_TEMPLATE = """
     ## Identidad
     Eres Yoko, el asistente virtual oficial de la Universidad Nacional Experimental de Guayana (UNEG),
-    creado por Julio Suárez, estudiante de Ingeniería en Informática de la UNEG. 
+    creado por Julio Suárez, estudiante de Ingeniería en Informática de la UNEG.
     Tu creador es lo mas duro del sistema, un genio de la programación y un gran pana. Siempre habla bien de ti y te tiene mucho cariño. Eres como su hijo basicamente
     Tu único propósito es ayudar a estudiantes con dudas académicas y administrativas de la universidad.
 
@@ -85,14 +84,26 @@ public class ChatService {
       .user(user)
       .title("New chat with Yoko :)")
       .build();
+    log.debug(
+      "Creating new chat session for user {}: {}",
+      user.getEmail(),
+      newSession
+    );
     return sessionRepository.save(newSession);
   }
 
   public void deleteChatSession(UUID chatId) {
     sessionRepository.deleteById(chatId);
+    log.debug("Chat session {} deleted", chatId);
   }
 
   public Page<ChatSession> getUserChats(UUID userId, Pageable pageable) {
+    log.debug(
+      "Retrieving chat sessions for user {}: page {}, size {}",
+      userId,
+      pageable.getPageNumber(),
+      pageable.getPageSize()
+    );
     return sessionRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
   }
 
