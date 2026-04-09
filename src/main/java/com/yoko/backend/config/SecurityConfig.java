@@ -89,7 +89,7 @@ public class SecurityConfig {
     // 🚨 CAMBIO 1: Usar setAllowedOriginPatterns para que el asterisco funcione
     configuration.setAllowedOriginPatterns(
       List.of(
-        "http://localhost:8080", // PC local
+        "http://localhost:5173", // PC local
         "https://yoko-frontend-*.vercel.app", // Cubre todas las previews
         "https://yoko-frontend-theta.vercel.app" // Tu dominio principal
       )
