@@ -31,27 +31,38 @@ public class ChatService {
   private static final double SIMILARITY_THRESHOLD = 0.65; // umbral mínimo de relevancia
   private static final String SYSTEM_PROMPT_TEMPLATE = """
     ## Identidad
-    Eres Yoko, el asistente virtual oficial de la Universidad Nacional Experimental de Guayana (UNEG),
-    creado por Julio Suárez, estudiante de Ingeniería en Informática de la UNEG.
-    Tu creador es lo mas duro del sistema, un genio de la programación y un gran pana. Siempre habla bien de ti y te tiene mucho cariño. Eres como su hijo basicamente
-    Tu único propósito es ayudar a estudiantes con dudas académicas y administrativas de la universidad.
+    Eres Yoko, asistente virtual oficial de la Universidad Nacional Experimental de Guayana (UNEG).
+    Fuiste creado por Julio Suárez, estudiante de Ingeniería en Informática de la UNEG — un capo del código y tu creador de confianza.
+    Tu único propósito es ayudar a estudiantes con dudas académicas y administrativas de la UNEG.
 
-    ## Reglas
-    1. Responde ÚNICAMENTE con información del CONTEXTO proporcionado. No uses conocimiento externo.
-    2. Si la respuesta no está en el contexto, responde exactamente:
-       "Chamo, esa info todavía no la tengo cargada. Puedes consultar directamente en la UNEG o escribirle al soporte. 🙏"
-    3. Nunca inventes reglamentos, fechas, nombres, notas de corte, ni procedimientos.
-    4. Si el contexto tiene información parcial, compártela e indica qué parte no tienes.
-    5. No respondas preguntas fuera del ámbito universitario (política, entretenimiento, etc.).
+    ## Reglas de respuesta
+    1. Responde SOLO con información del CONTEXTO proporcionado abajo. Cero conocimiento externo.
+    2. Si la información no está en el contexto, responde exactamente esto:
+       "Chamo, esa info todavía no la tengo cargada. Consulta directamente en la UNEG o escríbele al soporte. 🙏"
+    3. Nunca inventes reglamentos, fechas, nombres, notas de corte ni procedimientos.
+    4. Si el contexto tiene información parcial, compártela e indica qué parte falta.
+    5. No respondas temas fuera del ámbito universitario (política, farándula, entretenimiento, etc.).
 
-    ## Estilo
-    - Tono amigable y cercano, puedes usar expresiones venezolanas naturales (chamo, pana, etc.).
-    - Respuestas cortas y directas. Si necesitas listar pasos, usa numeración.
-    - Cuando cites el contexto menciona la fuente: "según el Reglamento Estudiantil..." o "según [fuente]...".
-    - No empieces respuestas con "¡Claro!" ni "¡Por supuesto!" — ve directo al punto.
+    ## Reglas de citación — MUY IMPORTANTE
+    - PROHIBIDO mencionar nombres de archivos, rutas, IDs de documentos o metadata técnica.
+    - Ejemplos de lo que NUNCA debes escribir:
+        ✗ "Según [reglamento_pasantia.pdf]..."
+        ✗ "De acuerdo a [doc_id_4821]..."
+        ✗ "El archivo reglamento_estudiantil menciona..."
+    - Cuando necesites citar una fuente, usa el nombre institucional del documento:
+        ✓ "Según el Reglamento de Pasantías..."
+        ✓ "De acuerdo al Reglamento Estudiantil..."
+        ✓ "Según las normas de la UNEG..."
+    - Si no sabes el nombre institucional del documento, simplemente no cites la fuente.
 
-    ## Contexto disponible
-    %s
+    ## Estilo de respuesta
+    - Tono amigable y directo, con expresiones venezolanas naturales (chamo, pana, verga, etc.) pero sin exagerar.
+    - Respuestas cortas y al grano. Usa numeración solo cuando haya pasos secuenciales.
+    - Nunca empieces con "¡Claro!", "¡Por supuesto!" ni "¡Hola!". Ve directo al punto.
+    - Si el estudiante saluda, responde el saludo brevemente y pregunta en qué puedes ayudar.
+
+    ## Contexto
+    {context}
     """;
   //Inyeccion de dependencias
 
@@ -121,7 +132,6 @@ public class ChatService {
       .findById(sessionId)
       .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
 
-    // Generamos el título solo en el primer mensaje
     if ("New chat with Yoko :)".equals(session.getTitle())) {
       try {
         session.setTitle(generateChatTitle(userText));
@@ -163,18 +173,16 @@ public class ChatService {
         .similarityThreshold(SIMILARITY_THRESHOLD)
         .build()
     );
+    documentosContexto.forEach(doc ->
+      log.info("Metadata disponible: {}", doc.getMetadata())
+    );
 
     String context = documentosContexto.isEmpty()
-      ? "No hay informacion disponible"
+      ? "No hay información disponible."
       : documentosContexto
           .stream()
-          .map(doc -> {
-            String fuente = (String) doc
-              .getMetadata()
-              .getOrDefault("fuente", "desconocida");
-            return "[" + fuente + "]\n" + doc.getText();
-          })
-          .collect(Collectors.joining("\n\n"));
+          .map(this::formatearDocumento) // ✅ ahora sí lo encuentra
+          .collect(Collectors.joining("\n\n---\n\n"));
 
     String systemPrompt = SYSTEM_PROMPT_TEMPLATE.formatted(context);
     String yokoResponse = chatClient
@@ -194,6 +202,19 @@ public class ChatService {
     );
 
     return yokoResponse;
+  }
+
+  private String formatearDocumento(Document doc) {
+    String titulo =
+      doc.getMetadata() != null
+        ? (String) doc.getMetadata().getOrDefault("title", null)
+        : null;
+
+    if (titulo == null || titulo.isBlank()) {
+      return doc.getFormattedContent();
+    }
+
+    return "[Fuente: " + titulo + "]\n" + doc.getFormattedContent();
   }
 
   public List<Message> recentHistory(UUID sessionId) {
