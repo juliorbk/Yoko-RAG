@@ -85,7 +85,7 @@ public class EmailService {
                                     <table width="100%%" cellpadding="0" cellspacing="0">
                                         <tr>
                                             <td align="center">
-                                                <a href="http://localhost:3000/login" target="_blank" style="background-color: #1e293b; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+                                                <a href="https://yoko-frontend-rho.vercel.app" target="_blank" style="background-color: #1e293b; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
                                                     INICIAR CONVERSACIÓN
                                                 </a>
                                             </td>

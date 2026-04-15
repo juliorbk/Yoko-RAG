@@ -60,10 +60,19 @@ public class AuthService {
       .build();
 
     User registeredUser = userRepository.save(newUser);
-    emailService.sendWelcomeEmail(
-      registeredUser.getEmail(),
-      registeredUser.getName()
-    );
+
+    try {
+      emailService.sendWelcomeEmail(
+        registeredUser.getEmail(),
+        registeredUser.getName()
+      );
+    } catch (Exception e) {
+      log.error(
+        "Failed to send welcome email to {}: {}",
+        registeredUser.getEmail(),
+        e.getMessage()
+      );
+    }
 
     String jwtToken = jwtService.generateToken(registeredUser.getEmail());
 
