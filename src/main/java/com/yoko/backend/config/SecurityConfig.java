@@ -65,7 +65,7 @@ public class SecurityConfig {
           )
           .permitAll()
           // Endpoints de Administración
-          .requestMatchers("/api/data-entry/**")
+          .requestMatchers("/api/admin/**")
           .hasAuthority("ADMIN")
           // Todo lo demás requiere token
           .anyRequest()
