@@ -1,8 +1,6 @@
 package com.yoko.backend.entities;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 import lombok.Builder;
 import org.springframework.ai.document.Document;
 
@@ -33,7 +31,6 @@ public class YokoDocument {
 
   // funcion lista para cuando se quiera dividir un documento en chunks y crear un YokoDocument por cada chunk, con subcategoria indicando el número de chunk. No se está usando actualmente, pero podría ser útil para documentos muy largos que necesiten ser divididos para una mejor vectorización.
 
-  
   //   public static List<YokoDocument> fromChunks(List<String> chunks, String titulo, String categoria) {
   //     return IntStream.range(0, chunks.size())
   //         .mapToObj(i -> YokoDocument.builder()

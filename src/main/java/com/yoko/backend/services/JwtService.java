@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,13 +16,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtService {
 
-  // Esta es tu firma digital. Es una cadena Hexadecimal de 256 bits.
-  // Le puse un valor por defecto para que compile directo, pero en producción
-  // se lee del application.properties
-  @Value(
-    "${application.security.jwt.secret-key:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}"
-  )
+  @Value("${application.security.jwt.secret-key}") // Se inyecta la clave secreta desde application.properties
   private String secretKey;
+
+  @PostConstruct
+  public void validateSecretKey() {
+    if (secretKey == null || secretKey.isEmpty() || secretKey.length() < 64) {
+      throw new IllegalStateException(
+        "JWT secret key must be set in application properties, be at least 64 characters long, and not be empty"
+      );
+    }
+  }
 
   @Value("${application.security.jwt.expiration:86400000}") // 1 día en milisegundos
   private long jwtExpiration;

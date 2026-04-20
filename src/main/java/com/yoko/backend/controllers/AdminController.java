@@ -10,14 +10,15 @@ import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.AuthService;
 import com.yoko.backend.services.DataEntryService;
+import com.yoko.backend.services.StatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
+@CrossOrigin(origins = "https://yoko-frontend-rho.vercel.app")
 @RestController
 @RequestMapping("/api/admin")
 @Tag(
@@ -35,20 +37,16 @@ public class AdminController {
 
   private final DataEntryService dataEntryService;
   private final UserRepository userRepository;
-  private final ChatSessionRepository chatSessionRepository;
-  private final MessageRepository messageRepository;
+  private final StatsService statsService;
 
   public AdminController(
     DataEntryService dataEntryService,
     UserRepository userRepository,
-    ChatSessionRepository chatSessionRepository,
-    MessageRepository messageRepository,
-    AuthService authService
+    StatsService statsService
   ) {
     this.dataEntryService = dataEntryService;
     this.userRepository = userRepository;
-    this.chatSessionRepository = chatSessionRepository;
-    this.messageRepository = messageRepository;
+    this.statsService = statsService;
   }
 
   /**
@@ -85,13 +83,9 @@ public class AdminController {
     description = "Endpoint to retrieve statistics about users, chat sessions, and messages"
   )
   public ResponseEntity<StatsResponse> getStats() {
+    StatsResponse stats = statsService.buildStats();
     // Implement logic to gather statistics about the system
-    StatsResponse stats = new StatsResponse(
-      userRepository.count(),
-      chatSessionRepository.count(),
-      messageRepository.count()
-    );
-    // Populate stats object with relevant data
+    System.out.println("Stats: " + stats);
     return ResponseEntity.ok(stats);
   }
 }

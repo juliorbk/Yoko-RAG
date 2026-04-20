@@ -28,7 +28,9 @@ public class DataEntryService {
       .content(req.getContent())
       .titulo(req.getTitulo())
       .categoria(req.getCategoria())
-      .subcategoria(req.getCategoria() != null ? req.getCategoria() : "general")
+      .subcategoria(
+        req.getSubcategoria() != null ? req.getSubcategoria() : "general"
+      )
       .fuente(fuente)
       .build();
 

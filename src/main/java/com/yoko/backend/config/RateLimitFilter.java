@@ -38,7 +38,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     FilterChain filterChain
   ) throws ServletException, IOException {
     // Solo aplicamos el escudo a las rutas de la API, dejamos libre el login o carga de datos si quieres
-    if (request.getRequestURI().startsWith("/api/sessions")) {
+    if (request.getRequestURI().startsWith("/api/sessions") ) {
       // Obtenemos la IP del usuario
       // Nota: Si Render usa un proxy, podrías necesitar leer el header "X-Forwarded-For"
       String ip = request.getHeader("X-Forwarded-For");

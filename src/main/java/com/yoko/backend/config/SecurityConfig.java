@@ -91,7 +91,7 @@ public class SecurityConfig {
       List.of(
         "http://localhost:5173", // PC local
         "https://yoko-frontend-*.vercel.app", // Cubre todas las previews
-        "https://yoko-frontend-theta.vercel.app" // Tu dominio principal
+        "https://yoko-frontend-rho.vercel.app" // Tu dominio principal
       )
     );
 
