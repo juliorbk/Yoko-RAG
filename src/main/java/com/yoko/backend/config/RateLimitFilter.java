@@ -17,19 +17,43 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-  // Un mapa en memoria para guardar los "baldes" (buckets) por cada IP
-  private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+  // Clave compuesta: "IP:ruta" → su bucket
+  private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
-  private Bucket createNewBucket() {
-    // Configuración del límite: 15 peticiones máximo por minuto.
-    // Si se gastan las 15, el usuario debe esperar a que se recargue.
+  private enum RateLimitedRoute {
+    LOGIN("/api/auth/login", 5, 1), // 5 intentos por minuto
+    REGISTER("/api/auth/register", 3, 5), // 3 registros por cada 5 minutos
+    SESSIONS("/api/sessions", 15, 30); // 15 solicitudes por cada 30 minutos para endpoints de sesiones
+
+    final String path;
+    final int capacity;
+    final int minutes;
+
+    RateLimitedRoute(String path, int capacity, int minutes) {
+      this.path = path;
+      this.capacity = capacity;
+      this.minutes = minutes;
+    }
+  }
+
+
+  private Bucket createBucket(RateLimitedRoute route) {
     Bandwidth limit = Bandwidth.builder()
-      .capacity(15)
-      .refillGreedy(15, Duration.ofMinutes(1))
+      .capacity(route.capacity)
+      .refillGreedy(route.capacity, Duration.ofMinutes(route.minutes))
       .build();
-
     return Bucket.builder().addLimit(limit).build();
   }
+
+
+  private String resolveIp(HttpServletRequest request) {
+    String forwarded = request.getHeader("X-Forwarded-For");
+    if (forwarded != null && !forwarded.isBlank()) {
+      return forwarded.split(",")[0].trim(); // solo el primer IP, sanitizado
+    }
+    return request.getRemoteAddr();
+  }
+
 
   @Override
   protected void doFilterInternal(
@@ -37,36 +61,38 @@ public class RateLimitFilter extends OncePerRequestFilter {
     HttpServletResponse response,
     FilterChain filterChain
   ) throws ServletException, IOException {
-    // Solo aplicamos el escudo a las rutas de la API, dejamos libre el login o carga de datos si quieres
-    if (request.getRequestURI().startsWith("/api/sessions") ) {
-      // Obtenemos la IP del usuario
-      // Nota: Si Render usa un proxy, podrías necesitar leer el header "X-Forwarded-For"
-      String ip = request.getHeader("X-Forwarded-For");
-      if (ip == null || ip.isEmpty()) {
-        ip = request.getRemoteAddr();
-      }
+    String uri = request.getRequestURI();
 
-      // Buscamos el balde de esta IP, si no existe, lo creamos
-      Bucket bucket = cache.computeIfAbsent(ip, k -> createNewBucket());
-
-      // Intentamos consumir 1 token por esta petición
-      if (bucket.tryConsume(1)) {
-        // Hay tokens disponibles, dejamos pasar la petición
-        filterChain.doFilter(request, response);
-      } else {
-        // No hay tokens, bloqueamos y devolvemos Error 429 (Too Many Requests)
-        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-        response.setContentType("application/json");
-        response
-          .getWriter()
-          .write(
-            "{\"error\": \"Has enviado demasiados mensajes a Yoko. Por favor, respira un minuto y vuelve a intentarlo.\"}"
-          );
-        return; // Cortamos la ejecución aquí
+    RateLimitedRoute matchedRoute = null;
+    for (RateLimitedRoute route : RateLimitedRoute.values()) {
+      if (uri.startsWith(route.path)) {
+        matchedRoute = route;
+        break;
       }
-    } else {
-      // Si no es una ruta de /api/sessions, pasa directo
+    }
+
+    if (matchedRoute == null) {
       filterChain.doFilter(request, response);
+      return;
+    }
+
+    String ip = resolveIp(request);
+    String bucketKey = ip + ":" + matchedRoute.name();
+    RateLimitedRoute finalRoute = matchedRoute;
+    Bucket bucket = buckets.computeIfAbsent(bucketKey, k ->
+      createBucket(finalRoute)
+    );
+
+    if (bucket.tryConsume(1)) {
+      filterChain.doFilter(request, response);
+    } else {
+      response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+      response.setContentType("application/json");
+      response
+        .getWriter()
+        .write(
+          "{\"error\": \"Demasiadas solicitudes. Espera un momento e intenta de nuevo.\"}"
+        );
     }
   }
 }
