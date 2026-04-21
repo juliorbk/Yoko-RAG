@@ -28,7 +28,7 @@ public class JwtService {
     }
   }
 
-  @Value("${application.security.jwt.expiration:86400000}") // 1 día en milisegundos
+  @Value("${application.security.jwt.expiration: 10800000}") // 3 horas en milisegundos
   private long jwtExpiration;
 
   // 1. Extraer el correo del token (que es nuestro Subject)

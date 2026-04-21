@@ -2,6 +2,7 @@ package com.yoko.backend.controllers;
 
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
+import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.ChatService;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,17 +53,28 @@ public class ChatController {
   @Operation(summary = "Send a message")
   public ResponseEntity<String> sendMessage(
     @PathVariable UUID chatId,
-    @RequestBody String message
+    @RequestBody String message,
+    @AuthenticationPrincipal User currentUser
   ) {
-    String response = chatService.handleMessage(chatId, message);
+    String response = chatService.handleMessage(
+      chatId,
+      message,
+      currentUser.getId()
+    );
 
     return ResponseEntity.ok(response);
   }
 
   @GetMapping("/{chatId}")
   @Operation(summary = "Get chat history")
-  public ResponseEntity<List<Message>> getHistory(@PathVariable UUID chatId) {
-    List<Message> history = chatService.recentHistory(chatId);
+  public ResponseEntity<List<Message>> getHistory(
+    @PathVariable UUID chatId,
+    @AuthenticationPrincipal User currentUser
+  ) {
+    List<Message> history = chatService.recentHistory(
+      chatId,
+      currentUser.getId()
+    );
     return ResponseEntity.ok(history);
   }
 
@@ -78,8 +91,11 @@ public class ChatController {
 
   @DeleteMapping("/{chatId}")
   @Operation(summary = "Delete a chat session")
-  public ResponseEntity<?> deleteChat(@PathVariable @NotNull UUID chatId) {
-    chatService.deleteChatSession(chatId);
+  public ResponseEntity<?> deleteChat(
+    @PathVariable @NotNull UUID chatId,
+    @AuthenticationPrincipal User currentUser
+  ) {
+    chatService.deleteChatSession(chatId, currentUser.getId());
     return ResponseEntity.ok().build();
   }
 }

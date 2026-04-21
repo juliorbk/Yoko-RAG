@@ -20,7 +20,11 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Slf4j
@@ -89,6 +93,20 @@ public class ChatService {
     this.chatClient = chatClient;
   }
 
+  // Helper reutilizable — lanza 403 si el usuario no es dueño
+  private void checkOwnership(ChatSession session, UUID requesterId) {
+    if (!session.getUser().getId().equals(requesterId)) {
+      log.warn(
+        "Acceso denegado: usuario {} intentó acceder a sesión de {}",
+        requesterId,
+        session.getUser().getId()
+      );
+      throw new AccessDeniedException(
+        "No tienes permiso para acceder a esta sesión"
+      );
+    }
+  }
+
   public ChatSession createChatSession(UUID userId) {
     User user = userRepository
       .findById(userId)
@@ -106,7 +124,11 @@ public class ChatService {
     return sessionRepository.save(newSession);
   }
 
-  public void deleteChatSession(UUID chatId) {
+  public void deleteChatSession(UUID chatId, UUID userId) {
+    ChatSession session = sessionRepository
+      .findById(chatId)
+      .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
+    checkOwnership(session, userId);
     sessionRepository.deleteById(chatId);
     log.debug("Chat session {} deleted", chatId);
   }
@@ -154,9 +176,7 @@ public class ChatService {
           "Posible prompt injection detectada. Patrón: '{}' en sesión",
           pattern
         );
-        throw new IllegalArgumentException(
-          "Mensaje no permitido. Si crees que es un error, reformula tu pregunta."
-        );
+        throw new IllegalArgumentException("prompt injection detected");
       }
     }
     return input.trim();
@@ -171,12 +191,21 @@ public class ChatService {
    * @param userText the message from the user
    * @return the response from the AI
    */
-  public String handleMessage(UUID sessionId, String rawUserText) {
+  public String handleMessage(
+    UUID sessionId,
+    String rawUserText,
+    UUID requesterId
+  ) {
     String userText = sanitizeUserInput(rawUserText);
     ChatSession session = sessionRepository
       .findById(sessionId)
-      .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
-
+      .orElseThrow(() ->
+        new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Error: Chat session not found"
+        )
+      );
+    checkOwnership(session, requesterId);
     if ("New chat with Yoko :)".equals(session.getTitle())) {
       try {
         session.setTitle(generateChatTitle(userText));
@@ -273,7 +302,14 @@ public class ChatService {
     return "[Fuente: " + titulo + "]\n" + doc.getFormattedContent();
   }
 
-  public List<Message> recentHistory(UUID sessionId) {
+  public List<Message> recentHistory(
+    @NonNull UUID sessionId,
+    UUID requesterId
+  ) {
+    ChatSession session = sessionRepository
+      .findById(sessionId)
+      .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
+    checkOwnership(session, requesterId);
     return messageRepository.findByChatSessionIdOrderByCreatedAtAsc(sessionId);
   }
 
