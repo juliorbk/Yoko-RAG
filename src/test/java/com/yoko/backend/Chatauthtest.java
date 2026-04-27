@@ -68,7 +68,7 @@ class ChatAuthorizationTest {
       .id(idPropietario)
       .email("propietario@uneg.edu.ve")
       .password("hashed")
-      .role(UserRole.STUDENT)
+      .role(UserRole.USER)
       .name("Propietario")
       .build();
 
@@ -76,7 +76,7 @@ class ChatAuthorizationTest {
       .id(idAjeno)
       .email("ajeno@uneg.edu.ve")
       .password("hashed")
-      .role(UserRole.STUDENT)
+      .role(UserRole.USER)
       .name("Ajeno")
       .build();
 

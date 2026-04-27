@@ -56,7 +56,7 @@ public class AuthService {
       .password(passwordEncoder.encode(request.getPassword()))
       .career(request.getCareer())
       .currentSemester(request.getCurrentSemester())
-      .role(UserRole.STUDENT)
+      .role(UserRole.USER)
       .build();
 
     User registeredUser = userRepository.save(newUser);
