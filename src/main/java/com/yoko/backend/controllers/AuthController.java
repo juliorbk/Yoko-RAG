@@ -2,6 +2,7 @@ package com.yoko.backend.controllers;
 
 import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.LoginRequest;
+import com.yoko.backend.DTOs.OrgRegisterRequest;
 import com.yoko.backend.DTOs.RegisterRequest;
 import com.yoko.backend.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,5 +52,14 @@ public class AuthController {
       request.getPassword()
     );
     return ResponseEntity.ok(loggedUser);
+  }
+
+  @PostMapping("/register-organization")
+  @Operation(summary = "Register a new organization with admin user")
+  public ResponseEntity<?> organizationRegister(
+    @Valid @RequestBody OrgRegisterRequest request
+  ) {
+    AuthResponse response = authService.organizationRegister(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 }

@@ -13,6 +13,6 @@ public class UserDTO {
   private String name;
   private String email;
   private UserRole role;
-  private String career;
-  private int currentSemester;
+  private UUID organizationId;
+  private String organizationName;
 }

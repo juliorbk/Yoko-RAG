@@ -1,10 +1,13 @@
 package com.yoko.backend.services;
 
 import com.yoko.backend.DTOs.AuthResponse;
+import com.yoko.backend.DTOs.OrgRegisterRequest;
 import com.yoko.backend.DTOs.RegisterRequest;
 import com.yoko.backend.DTOs.UserDTO;
+import com.yoko.backend.entities.Organization;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
+import com.yoko.backend.repositories.OrganizationRepository;
 import com.yoko.backend.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,6 +22,7 @@ public class AuthService {
 
   private final EmailService emailService;
   private final UserRepository userRepository;
+  private final OrganizationRepository organizationRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
 
@@ -26,9 +30,11 @@ public class AuthService {
     UserRepository userRepository,
     PasswordEncoder passwordEncoder,
     JwtService jwtService,
-    EmailService emailService
+    EmailService emailService,
+    OrganizationRepository organizationRepository
   ) {
     this.userRepository = userRepository;
+    this.organizationRepository = organizationRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.emailService = emailService;
@@ -111,11 +117,57 @@ public class AuthService {
       .name(user.getName())
       .email(user.getEmail())
       .role(user.getRole())
-      .career(user.getCareer())
-      .currentSemester(user.getCurrentSemester())
+      .organizationId(
+        user.getOrganization() != null ? user.getOrganization().getId() : null
+      )
+      .organizationName(
+        user.getOrganization() != null ? user.getOrganization().getName() : null
+      )
       .build();
 
     log.debug("User logged in: " + userDTO);
+    return AuthResponse.builder().token(jwtToken).user(userDTO).build();
+  }
+
+  public AuthResponse organizationRegister(OrgRegisterRequest request) {
+    if (userRepository.findByEmail(request.getAdminEmail()).isPresent()) {
+      throw new RuntimeException("Email already registered");
+    }
+
+    String slug = request
+      .getOrganizationName()
+      .toLowerCase()
+      .replaceAll("[^a-z0-9\\s]", "")
+      .trim()
+      .replaceAll("\\s+", "-");
+
+    Organization organization = Organization.builder()
+      .name(request.getOrganizationName())
+      .slug(slug)
+      .plan("trial")
+      .isActive(true)
+      .build();
+
+    Organization savedOrg = organizationRepository.save(organization);
+
+    User adminUser = User.builder()
+      .name(request.getAdminName())
+      .email(request.getAdminEmail())
+      .password(passwordEncoder.encode(request.getAdminPassword()))
+      .role(UserRole.ADMIN)
+      .organization(savedOrg)
+      .build();
+
+    User savedAdmin = userRepository.save(adminUser);
+
+    String jwtToken = jwtService.generateToken(savedAdmin.getEmail());
+
+    UserDTO userDTO = UserDTO.builder()
+      .id(savedAdmin.getId())
+      .name(savedAdmin.getName())
+      .email(savedAdmin.getEmail())
+      .role(savedAdmin.getRole())
+      .build();
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
 }
