@@ -194,7 +194,8 @@ public class ChatService {
   public String handleMessage(
     UUID sessionId,
     String rawUserText,
-    UUID requesterId
+    UUID requesterId,
+    UUID organizationId
   ) {
     String userText = sanitizeUserInput(rawUserText);
     ChatSession session = sessionRepository
@@ -244,6 +245,7 @@ public class ChatService {
         .query(userText)
         .topK(TOP_K)
         .similarityThreshold(SIMILARITY_THRESHOLD)
+        .filterExpression("organization_id = '" + organizationId + "'")
         .build()
     );
     documentosContexto.forEach(doc ->

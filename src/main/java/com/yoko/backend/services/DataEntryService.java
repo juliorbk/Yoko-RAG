@@ -3,6 +3,7 @@ package com.yoko.backend.services;
 import com.yoko.backend.DTOs.DataEntryRequest;
 import com.yoko.backend.entities.YokoDocument;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -15,7 +16,7 @@ public class DataEntryService {
 
   private final VectorStore vectorStore;
 
-  public void ingest(DataEntryRequest req) {
+  public void ingest(DataEntryRequest req, UUID organizationId) {
     // Genera el slug de fuente a partir del título
     String fuente = req
       .getTitulo()
@@ -31,6 +32,7 @@ public class DataEntryService {
       .subcategoria(
         req.getSubcategoria() != null ? req.getSubcategoria() : "general"
       )
+      .organizationId(organizationId.toString())
       .fuente(fuente)
       .build();
 

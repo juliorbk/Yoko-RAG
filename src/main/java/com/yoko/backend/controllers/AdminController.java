@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,9 +61,10 @@ public class AdminController {
     description = "Endpoint to load data from the vector store"
   )
   public ResponseEntity<Map<String, String>> loadData(
-    @Valid @RequestBody DataEntryRequest request
+    @Valid @RequestBody DataEntryRequest request,
+    @AuthenticationPrincipal User currentUser
   ) {
-    dataEntryService.ingest(request);
+    dataEntryService.ingest(request, currentUser.getOrganization().getId());
     return ResponseEntity.ok(Map.of("message", "Data loaded successfully"));
   }
 

@@ -59,7 +59,8 @@ public class ChatController {
     String response = chatService.handleMessage(
       chatId,
       message,
-      currentUser.getId()
+      currentUser.getId(),
+      currentUser.getOrganization().getId()
     );
 
     return ResponseEntity.ok(response);

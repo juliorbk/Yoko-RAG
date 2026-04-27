@@ -75,7 +75,7 @@ public class User implements UserDetails {
   @ToString.Exclude
   private List<ChatSession> chatSessions;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "organization_id")
   private Organization organization;
 }

@@ -20,4 +20,6 @@ public class DataEntryRequest {
   private String categoria;
 
   private String subcategoria;
+
+  
 }

@@ -12,6 +12,7 @@ public class YokoDocument {
   private String categoria; // "reglamento", "pensum", "calendario", etc.
   private String subcategoria; // "pasantias", "inscripcion", "historia", etc.
   private String fuente; // slug del documento, ej: "reglamento_estudiantil"
+  private String organizationId; // ID de la organización a la que pertenece el documento
 
   public Document toSpringAiDocument() {
     return new Document(
@@ -23,6 +24,8 @@ public class YokoDocument {
         categoria,
         "subcategoria",
         subcategoria,
+        "organizationId",
+        organizationId,
         "fuente",
         fuente
       )
