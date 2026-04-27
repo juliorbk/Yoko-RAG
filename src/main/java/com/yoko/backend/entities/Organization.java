@@ -28,7 +28,7 @@ public class Organization {
   private String name;
   private String slug;
   private String plan;
-  private boolean isActive;
+  private boolean active;
 
   @OneToMany(mappedBy = "organization")
   private List<User> users;

@@ -145,7 +145,7 @@ public class AuthService {
       .name(request.getOrganizationName())
       .slug(slug)
       .plan("trial")
-      .isActive(true)
+      .active(true)
       .build();
 
     Organization savedOrg = organizationRepository.save(organization);
