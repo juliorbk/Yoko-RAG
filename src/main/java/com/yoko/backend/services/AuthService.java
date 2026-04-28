@@ -60,8 +60,6 @@ public class AuthService {
       .name(request.getName())
       .email(request.getEmail())
       .password(passwordEncoder.encode(request.getPassword()))
-      .career(request.getCareer())
-      .currentSemester(request.getCurrentSemester())
       .role(UserRole.USER)
       .build();
 

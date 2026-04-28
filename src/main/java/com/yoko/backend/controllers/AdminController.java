@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -89,5 +90,22 @@ public class AdminController {
     // Implement logic to gather statistics about the system
     System.out.println("Stats: " + stats);
     return ResponseEntity.ok(stats);
+  }
+
+  @GetMapping("/docs")
+  public ResponseEntity<List<Map<String, Object>>> getDocuments(
+    @AuthenticationPrincipal User currentUser
+  ) {
+    // 1. Extraemos el ID de forma segura
+    String organizationId = currentUser.getOrganization().getId().toString();
+
+    // 2. Buscamos los documentos con su metadata (titulo y categoria)
+    // 🚨 CAMBIO AQUÍ: Usamos getDocumentsInfo y List<Map<String, Object>>
+    List<Map<String, Object>> docs = statsService.getDocumentsInfo(
+      organizationId
+    );
+
+    // 3. Devolvemos el JSON perfecto para el frontend
+    return ResponseEntity.ok(docs);
   }
 }

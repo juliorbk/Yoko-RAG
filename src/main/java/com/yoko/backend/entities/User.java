@@ -65,11 +65,6 @@ public class User implements UserDetails {
   @Column(nullable = false)
   private UserRole role;
 
-  private String career;
-
-  @Column(name = "current_semester")
-  private Integer currentSemester;
-
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   @ToString.Exclude
