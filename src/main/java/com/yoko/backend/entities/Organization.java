@@ -27,14 +27,15 @@ public class Organization {
   private UUID id;
 
   private String name;
-  private String slug;
   private String plan;
   private boolean active;
 
-  // En Organization.java
   @Column(columnDefinition = "TEXT")
   private String aiPersona; // Ej: "Eres el recepcionista virtual del Hotel Llovizna Suites. Tu tono es formal y servicial..."
 
   @OneToMany(mappedBy = "organization")
   private List<User> users;
+
+  @Column(unique = true, nullable = false)
+  private String slug; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
 }

@@ -55,12 +55,16 @@ public class AuthService {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new RuntimeException("User already registered");
     }
+    Organization org = organizationRepository
+      .findBySlug(request.getOrganizationSlug())
+      .orElseThrow(() -> new RuntimeException("Organization not found"));
 
     User newUser = User.builder()
       .name(request.getName())
       .email(request.getEmail())
       .password(passwordEncoder.encode(request.getPassword()))
       .role(UserRole.USER)
+      .organization(org)
       .build();
 
     User registeredUser = userRepository.save(newUser);
@@ -80,7 +84,12 @@ public class AuthService {
 
     String jwtToken = jwtService.generateToken(registeredUser.getEmail());
 
-    log.debug("Registered user: " + registeredUser);
+    log.debug(
+      "Registered user: " +
+        registeredUser +
+        " in organization: " +
+        org.getName()
+    );
     return AuthResponse.builder().token(jwtToken).build();
   }
 
