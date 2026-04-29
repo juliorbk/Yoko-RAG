@@ -4,10 +4,12 @@ import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.DataEntryRequest;
 import com.yoko.backend.DTOs.LoginRequest;
 import com.yoko.backend.DTOs.StatsResponse;
+import com.yoko.backend.DTOs.YokoDocDTO;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
+import com.yoko.backend.repositories.YokoDocumentRepository;
 import com.yoko.backend.services.AuthService;
 import com.yoko.backend.services.DataEntryService;
 import com.yoko.backend.services.StatsService;
@@ -41,14 +43,18 @@ public class AdminController {
   private final UserRepository userRepository;
   private final StatsService statsService;
 
+  private final YokoDocumentRepository yokoDocumentRepository;
+
   public AdminController(
     DataEntryService dataEntryService,
     UserRepository userRepository,
-    StatsService statsService
+    StatsService statsService,
+    YokoDocumentRepository yokoDocumentRepository
   ) {
     this.dataEntryService = dataEntryService;
     this.userRepository = userRepository;
     this.statsService = statsService;
+    this.yokoDocumentRepository = yokoDocumentRepository;
   }
 
   /**
@@ -93,19 +99,9 @@ public class AdminController {
   }
 
   @GetMapping("/docs")
-  public ResponseEntity<List<Map<String, Object>>> getDocuments(
-    @AuthenticationPrincipal User currentUser
-  ) {
-    // 1. Extraemos el ID de forma segura
-    String organizationId = currentUser.getOrganization().getId().toString();
-
-    // 2. Buscamos los documentos con su metadata (titulo y categoria)
-    // 🚨 CAMBIO AQUÍ: Usamos getDocumentsInfo y List<Map<String, Object>>
-    List<Map<String, Object>> docs = statsService.getDocumentsInfo(
-      organizationId
-    );
-
-    // 3. Devolvemos el JSON perfecto para el frontend
+  public ResponseEntity<List<YokoDocDTO>> getDocs() {
+    List<YokoDocDTO> docs = yokoDocumentRepository.findAll();
+    log.info("Retrieved {} documents from vector_store", docs.size());
     return ResponseEntity.ok(docs);
   }
 }

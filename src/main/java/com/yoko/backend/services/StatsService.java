@@ -5,6 +5,7 @@ import com.yoko.backend.DTOs.TopQuestionDTO;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
+import com.yoko.backend.repositories.YokoDocumentRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -24,18 +24,18 @@ public class StatsService {
   private final ChatSessionRepository chatSessionRepository;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
-  private final JdbcTemplate jdbcTemplate;
+  private YokoDocumentRepository yokoDocumentRepository;
 
   public StatsService(
     ChatSessionRepository chatSessionRepository,
     MessageRepository messageRepository,
     UserRepository userRepository,
-    JdbcTemplate jdbcTemplate
+    YokoDocumentRepository yokoDocumentRepository
   ) {
     this.chatSessionRepository = chatSessionRepository;
     this.messageRepository = messageRepository;
     this.userRepository = userRepository;
-    this.jdbcTemplate = jdbcTemplate;
+    this.yokoDocumentRepository = yokoDocumentRepository;
   }
 
   //Estadisticas generales
@@ -71,7 +71,7 @@ public class StatsService {
       messagesLastWeek.add(countByDay.getOrDefault(day, 0L));
     }
 
-    long totalDocuments = 1260L;
+    long totalDocuments = yokoDocumentRepository.count();
 
     List<TopQuestionDTO> topQuestions = buildTopQuestions();
 
@@ -113,37 +113,5 @@ public class StatsService {
       .limit(5)
       .map(e -> new TopQuestionDTO(e.getValue(), e.getKey()))
       .collect(Collectors.toList());
-  }
-
-  // 1. Obtener la cantidad total de documentos de un cliente
-  public long getDocumentCount(String organizationId) {
-    String sql =
-      "SELECT COUNT(*) FROM vector_store WHERE metadata->>'organizationId' = ?";
-    Long count = jdbcTemplate.queryForObject(sql, Long.class, organizationId);
-    return count != null ? count : 0L;
-  }
-
-  public List<Map<String, Object>> getDocumentsInfo(String organizationId) {
-    String sql =
-      "SELECT DISTINCT metadata->>'title' as titulo, " +
-      "metadata->>'categoria' as categoria " +
-      "FROM vector_store " +
-      "WHERE metadata->>'organizationId' = ? " +
-      "AND metadata->>'title' IS NOT NULL";
-
-    log.info(
-      "Executing SQL: " + sql + " with organizationId: " + organizationId
-    );
-    return jdbcTemplate.queryForList(sql, organizationId);
-  }
-
-  // 3. (Extra) Obtener cuántos documentos hay por cada categoría
-  public List<Map<String, Object>> getCountByCategory(String organizationId) {
-    String sql =
-      "SELECT metadata->>'categoria' as categoria, COUNT(*) as total " +
-      "FROM vector_store " +
-      "WHERE metadata->>'organizationId' = ? " +
-      "GROUP BY metadata->>'categoria'";
-    return jdbcTemplate.queryForList(sql, organizationId);
   }
 }
