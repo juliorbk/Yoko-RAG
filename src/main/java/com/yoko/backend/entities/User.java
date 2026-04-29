@@ -70,6 +70,7 @@ public class User implements UserDetails {
   @ToString.Exclude
   private List<ChatSession> chatSessions;
 
+  @ToString.Exclude 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "organization_id")
   private Organization organization;

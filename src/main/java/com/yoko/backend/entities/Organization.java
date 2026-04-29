@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -33,8 +34,13 @@ public class Organization {
   @Column(columnDefinition = "TEXT")
   private String aiPersona; // Ej: "Eres el recepcionista virtual del Hotel Llovizna Suites. Tu tono es formal y servicial..."
 
+  @ToString.Exclude
   @OneToMany(mappedBy = "organization")
   private List<User> users;
+
+  @ToString.Exclude
+  @OneToMany(mappedBy = "organization")
+  private List<YokoDocument> documents;
 
   @Column(unique = true, nullable = false)
   private String slug; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"

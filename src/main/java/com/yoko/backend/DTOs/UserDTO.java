@@ -27,6 +27,10 @@ public class UserDTO {
     dto.setEmail(user.getEmail());
     dto.setName(user.getName());
     dto.setRole(user.getRole());
+    if (user.getOrganization() != null) {
+      dto.setOrganizationId(user.getOrganization().getId());
+      dto.setOrganizationName(user.getOrganization().getName());
+    }
     return dto;
   }
 }

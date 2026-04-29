@@ -90,7 +90,10 @@ public class AuthService {
         " in organization: " +
         org.getName()
     );
-    return AuthResponse.builder().token(jwtToken).build();
+    return AuthResponse.builder()
+      .token(jwtToken)
+      .user(UserDTO.fromUser(registeredUser))
+      .build();
   }
 
   /**
