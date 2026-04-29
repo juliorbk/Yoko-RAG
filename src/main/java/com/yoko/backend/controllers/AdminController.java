@@ -7,6 +7,7 @@ import com.yoko.backend.DTOs.StatsResponse;
 import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.DTOs.YokoDocDTO;
 import com.yoko.backend.entities.User;
+import com.yoko.backend.entities.YokoDocument;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
@@ -72,7 +73,7 @@ public class AdminController {
     @Valid @RequestBody DataEntryRequest request,
     @AuthenticationPrincipal User currentUser
   ) {
-    dataEntryService.ingest(request, currentUser.getOrganization().getId());
+    dataEntryService.ingest(request, currentUser);
     return ResponseEntity.ok(Map.of("message", "Data loaded successfully"));
   }
 
@@ -106,7 +107,11 @@ public class AdminController {
 
   @GetMapping("/docs")
   public ResponseEntity<List<YokoDocDTO>> getDocs() {
-    List<YokoDocDTO> docs = yokoDocumentRepository.findAll();
+    List<YokoDocDTO> docs = yokoDocumentRepository
+      .findAll()
+      .stream()
+      .map(YokoDocDTO::fromEntity)
+      .toList();
     log.info("Retrieved {} documents from vector_store", docs.size());
     return ResponseEntity.ok(docs);
   }
