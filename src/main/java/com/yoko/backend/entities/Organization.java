@@ -1,5 +1,6 @@
 package com.yoko.backend.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +30,10 @@ public class Organization {
   private String slug;
   private String plan;
   private boolean active;
+
+  // En Organization.java
+  @Column(columnDefinition = "TEXT")
+  private String aiPersona; // Ej: "Eres el recepcionista virtual del Hotel Llovizna Suites. Tu tono es formal y servicial..."
 
   @OneToMany(mappedBy = "organization")
   private List<User> users;
