@@ -4,6 +4,7 @@ import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.DataEntryRequest;
 import com.yoko.backend.DTOs.LoginRequest;
 import com.yoko.backend.DTOs.StatsResponse;
+import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.DTOs.YokoDocDTO;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.ChatSessionRepository;
@@ -80,8 +81,13 @@ public class AdminController {
     summary = "Get all users",
     description = "Endpoint to retrieve all users"
   )
-  public ResponseEntity<List<User>> getUsers() {
-    List<User> users = userRepository.findAll();
+  public ResponseEntity<List<UserDTO>> getUsers() {
+    List<UserDTO> users = userRepository
+      .findAll()
+      .stream()
+      .map(UserDTO::fromUser)
+      .toList();
+
     log.info("Retrieved all users from the database");
     return ResponseEntity.ok(users);
   }

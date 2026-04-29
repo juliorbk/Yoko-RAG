@@ -81,15 +81,17 @@ public class ChatController {
     return ResponseEntity.ok(history);
   }
 
-  @GetMapping("/{userId}/chats")
+  @GetMapping("/my-chats")
   @Operation(summary = "Get user's chats")
   public ResponseEntity<Page<ChatSession>> getChats(
-    @PathVariable UUID userId,
+    @AuthenticationPrincipal User currentUser,
     @RequestParam(defaultValue = "0") int page,
     @RequestParam(defaultValue = "10") int size
   ) {
     Pageable pageable = PageRequest.of(page, size);
-    return ResponseEntity.ok(chatService.getUserChats(userId, pageable));
+    return ResponseEntity.ok(
+      chatService.getUserChats(currentUser.getId(), pageable)
+    );
   }
 
   @DeleteMapping("/{chatId}")

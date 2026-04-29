@@ -17,6 +17,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -198,6 +199,11 @@ public class ChatService {
     UUID organizationId
   ) {
     String userText = sanitizeUserInput(rawUserText);
+    FilterExpressionBuilder expression = new FilterExpressionBuilder();
+    var filter = expression
+      .eq("organizationId", organizationId.toString())
+      .build();
+
     ChatSession session = sessionRepository
       .findById(sessionId)
       .orElseThrow(() ->
@@ -245,7 +251,7 @@ public class ChatService {
         .query(userText)
         .topK(TOP_K)
         .similarityThreshold(SIMILARITY_THRESHOLD)
-        .filterExpression("organization_id = '" + organizationId + "'")
+        .filterExpression(filter)
         .build()
     );
     documentosContexto.forEach(doc ->
@@ -256,7 +262,7 @@ public class ChatService {
       ? "No hay información disponible."
       : documentosContexto
           .stream()
-          .map(this::formatearDocumento) // ✅ ahora sí lo encuentra
+          .map(this::formatearDocumento)
           .collect(Collectors.joining("\n\n---\n\n"));
 
     String userMessageWithContext = String.format(
