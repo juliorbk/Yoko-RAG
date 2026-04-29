@@ -1,18 +1,12 @@
 package com.yoko.backend.controllers;
 
-import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.DataEntryRequest;
-import com.yoko.backend.DTOs.LoginRequest;
 import com.yoko.backend.DTOs.StatsResponse;
 import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.DTOs.YokoDocDTO;
 import com.yoko.backend.entities.User;
-import com.yoko.backend.entities.YokoDocument;
-import com.yoko.backend.repositories.ChatSessionRepository;
-import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.repositories.YokoDocumentRepository;
-import com.yoko.backend.services.AuthService;
 import com.yoko.backend.services.DataEntryService;
 import com.yoko.backend.services.StatsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +14,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -106,13 +103,28 @@ public class AdminController {
   }
 
   @GetMapping("/docs")
-  public ResponseEntity<List<YokoDocDTO>> getDocs() {
-    List<YokoDocDTO> docs = yokoDocumentRepository
-      .findAll()
-      .stream()
-      .map(YokoDocDTO::fromEntity)
-      .toList();
-    log.info("Retrieved {} documents from vector_store", docs.size());
+  public ResponseEntity<Page<YokoDocDTO>> getDocs(
+    @AuthenticationPrincipal User currentUser,
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "10") int size
+  ) {
+    UUID orgId = currentUser.getOrganization().getId();
+
+    // Creamos el objeto de paginación
+    PageRequest pageable = PageRequest.of(page, size);
+
+    // Llamamos al repositorio paginado y transformamos la entidad al DTO
+    Page<YokoDocDTO> docs = yokoDocumentRepository
+      .findByOrganizationId(orgId, pageable)
+      .map(YokoDocDTO::fromEntity);
+
+    log.info(
+      "Retrieved page {} containing {} documents for organization {}",
+      page,
+      docs.getNumberOfElements(),
+      orgId
+    );
+
     return ResponseEntity.ok(docs);
   }
 }
