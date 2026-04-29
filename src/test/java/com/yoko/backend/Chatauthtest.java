@@ -166,7 +166,7 @@ class ChatAuthorizationTest {
     @Test
     @DisplayName("el propietario puede enviar mensajes a su sesión")
     void propietarioPuedeEnviarMensaje() throws Exception {
-      when(chatService.handleMessage(any(), any(), any(), any())).thenReturn(
+      when(chatService.handleMessage(any(), any(), any())).thenReturn(
         "Respuesta"
       );
       mockMvc
@@ -225,7 +225,7 @@ class ChatAuthorizationTest {
     @DisplayName("un usuario ajeno NO puede enviar mensajes a otra sesión")
     void ajenoNoPuedeEnviarMensaje() throws Exception {
       // Le decimos al mock que simule el ResponseStatusException de tu ChatService
-      when(chatService.handleMessage(any(), any(), any(), any())).thenThrow(
+      when(chatService.handleMessage(any(), any(), any())).thenThrow(
         new AccessDeniedException("No tienes permiso")
       );
 

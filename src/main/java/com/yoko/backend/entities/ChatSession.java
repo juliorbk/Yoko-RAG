@@ -86,6 +86,10 @@ public class ChatSession {
   )
   private List<Message> messages;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "organization_id", nullable = false)
+  private Organization organization;
+
   /**
    * JPA lifecycle hook — runs automatically just before this entity is
    * first persisted to the database.

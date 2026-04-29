@@ -3,6 +3,7 @@ package com.yoko.backend.services;
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.MessageRole;
+import com.yoko.backend.entities.Organization;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
@@ -195,14 +196,19 @@ public class ChatService {
   public String handleMessage(
     UUID sessionId,
     String rawUserText,
-    UUID requesterId,
-    UUID organizationId
+    User currentUser
   ) {
     String userText = sanitizeUserInput(rawUserText);
-    FilterExpressionBuilder expression = new FilterExpressionBuilder();
-    var filter = expression
-      .eq("organizationId", organizationId.toString())
-      .build();
+    Organization userOrg = currentUser.getOrganization();
+    if (userOrg == null) {
+      log.error(
+        "El usuario {} no tiene una organización asignada",
+        currentUser.getEmail()
+      );
+      throw new RuntimeException("User organization not found");
+    }
+
+    UUID organizationId = userOrg.getId();
 
     ChatSession session = sessionRepository
       .findById(sessionId)
@@ -212,7 +218,21 @@ public class ChatService {
           "Error: Chat session not found"
         )
       );
-    checkOwnership(session, requesterId);
+
+    checkOwnership(session, currentUser.getId());
+
+    if (!currentUser.getOrganization().getId().equals(organizationId)) {
+      throw new ResponseStatusException(
+        HttpStatus.FORBIDDEN,
+        "Alerta: Acceso cruzado detectado. El usuario pertenece a otra organización."
+      );
+    }
+
+    FilterExpressionBuilder expression = new FilterExpressionBuilder();
+    var filter = expression
+      .eq("organizationId", organizationId.toString())
+      .build();
+
     if ("New chat with Yoko :)".equals(session.getTitle())) {
       try {
         session.setTitle(generateChatTitle(userText));
