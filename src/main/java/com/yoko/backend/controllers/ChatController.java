@@ -42,8 +42,10 @@ public class ChatController {
 
   @PostMapping("/{userId}")
   @Operation(summary = "Create a new chat session")
-  public ResponseEntity<ChatSession> newChat(@PathVariable UUID userId) {
-    ChatSession newSession = chatService.createChatSession(userId);
+  public ResponseEntity<ChatSession> newChat(
+    @AuthenticationPrincipal User currentUser
+  ) {
+    ChatSession newSession = chatService.createChatSession(currentUser.getId());
 
     return ResponseEntity.ok(newSession);
   }
