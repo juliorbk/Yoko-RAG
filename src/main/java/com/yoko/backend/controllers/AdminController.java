@@ -79,9 +79,9 @@ public class AdminController {
     summary = "Get all users",
     description = "Endpoint to retrieve all users"
   )
-  public ResponseEntity<List<UserDTO>> getUsers() {
+  public ResponseEntity<List<UserDTO>> getUsers(@AuthenticationPrincipal User currentUser) {
     List<UserDTO> users = userRepository
-      .findAll()
+      .findByOrganizationId(currentUser.getOrganization().getId())
       .stream()
       .map(UserDTO::fromUser)
       .toList();
@@ -95,7 +95,7 @@ public class AdminController {
     summary = "Get system statistics",
     description = "Endpoint to retrieve statistics about users, chat sessions, and messages"
   )
-  public ResponseEntity<StatsResponse> getStats() {
+  public ResponseEntity<StatsResponse> getStats(@AuthenticationPrincipal User currentUser) {
     StatsResponse stats = statsService.buildStats();
     // Implement logic to gather statistics about the system
     System.out.println("Stats: " + stats);

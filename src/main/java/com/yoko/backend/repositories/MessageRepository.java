@@ -19,28 +19,29 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     PageRequest of
   );
 
-  // Mensajes del dia actual
+  //Mensajes por día filtrados por org
   @Query(
     """
     SELECT CAST(m.createdAt AS date) as day, COUNT(m) as total
     FROM Message m
     WHERE m.createdAt >= :since
+      AND m.chatSession.organization.id = :orgId
     GROUP BY CAST(m.createdAt AS date)
     ORDER BY CAST(m.createdAt AS date) ASC
     """
   )
-  List<Object[]> countMessagesPerDayFrom(@Param("since") LocalDateTime since);
+  List<Object[]> countMessagesPerDayFromByOrg(
+    @Param("since") LocalDateTime since,
+    @Param("orgId") UUID orgId
+  );
 
-  /**
-   * Finds the first message sent by each user in each chat session.
-   * Returns a list of objects containing the message content.
-   * @return a list of objects containing the message content
-   */
+  // Top preguntas filtradas por org
   @Query(
     """
     SELECT m.content
     FROM Message m
     WHERE m.role = 'USER'
+      AND m.chatSession.organization.id = :orgId
       AND m.createdAt = (
           SELECT MIN(m2.createdAt)
           FROM Message m2
@@ -49,5 +50,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
       )
     """
   )
-  List<Object[]> findFirstUserMessagePerSession();
+  List<Object[]> findFirstUserMessagePerSessionByOrg(
+    @Param("orgId") UUID orgId
+  );
+
+  Long countByChatSessionOrganizationId(UUID orgId);
 }

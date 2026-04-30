@@ -11,50 +11,41 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class StatsService {
 
-  //Inyectamos los repositorios necesarios
   private final ChatSessionRepository chatSessionRepository;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
-  private YokoDocumentRepository yokoDocumentRepository;
+  private final YokoDocumentRepository yokoDocumentRepository;
 
-  public StatsService(
-    ChatSessionRepository chatSessionRepository,
-    MessageRepository messageRepository,
-    UserRepository userRepository,
-    YokoDocumentRepository yokoDocumentRepository
-  ) {
-    this.chatSessionRepository = chatSessionRepository;
-    this.messageRepository = messageRepository;
-    this.userRepository = userRepository;
-    this.yokoDocumentRepository = yokoDocumentRepository;
-  }
-
-  //Estadisticas generales
-  public StatsResponse buildStats() {
-    //Conteos sencillos
-    long totalUsers = userRepository.count();
-    long totalMessages = messageRepository.count();
-
-    //Conteos del día actual
-    LocalDateTime last24Hours = LocalDateTime.now().minusHours(24);
-    long activeSessions = chatSessionRepository.countSessionsSince(last24Hours);
-
-    //Conteos de la semana actual
-    LocalDateTime last7Days = LocalDateTime.now().minusDays(7);
-
-    List<Object[]> rawCounts = messageRepository.countMessagesPerDayFrom(
-      last7Days
+  // ✅ Recibe orgId en lugar de contar todo
+  public StatsResponse buildStats(UUID orgId) {
+    long totalUsers = userRepository.countByOrganizationId(orgId);
+    long totalMessages = messageRepository.countByChatSessionOrganizationId(
+      orgId
     );
 
-    // Construir un mapa fecha → conteo para rellenar días sin mensajes con 0
+    LocalDateTime last24Hours = LocalDateTime.now().minusHours(24);
+    long activeSessions = chatSessionRepository.countSessionsSinceByOrg(
+      orgId,
+      last24Hours
+    );
+
+    LocalDateTime last7Days = LocalDateTime.now().minusDays(7);
+    List<Object[]> rawCounts = messageRepository.countMessagesPerDayFromByOrg(
+      last7Days,
+      orgId
+    );
+
     Map<LocalDate, Long> countByDay = rawCounts
       .stream()
       .collect(
@@ -70,9 +61,8 @@ public class StatsService {
       messagesLastWeek.add(countByDay.getOrDefault(day, 0L));
     }
 
-    long totalDocuments = yokoDocumentRepository.count();
-
-    List<TopQuestionDTO> topQuestions = buildTopQuestions();
+    long totalDocuments = yokoDocumentRepository.countByOrganizationId(orgId);
+    List<TopQuestionDTO> topQuestions = buildTopQuestions(orgId);
 
     return new StatsResponse(
       totalUsers,
@@ -84,27 +74,15 @@ public class StatsService {
     );
   }
 
-  /**
-   * Construye una lista de objetos TopQuestionDTO que contienen la frecuencia de las preguntas
-   * más comunes en el chat de la UNEG. La frecuencia se calcula a partir de los
-   * primeros mensajes de usuario de cada sesión, normalizando a minúsculas y
-   * trim. La lista se ordena descendente por frecuencia y se toman los 5 primeros
-   * elementos.
-   * @return una lista de objetos TopQuestionDTO que contiene la frecuencia de las preguntas
-   * más comunes en el chat de la UNEG
-   */
-  private List<TopQuestionDTO> buildTopQuestions() {
-    // Trae todos los primeros mensajes de usuario de cada sesión
+  private List<TopQuestionDTO> buildTopQuestions(UUID orgId) {
     List<Object[]> firstMessages =
-      messageRepository.findFirstUserMessagePerSession();
+      messageRepository.findFirstUserMessagePerSessionByOrg(orgId);
 
-    // Agrupa por texto exacto y cuenta (normaliza a minúsculas y trim)
     Map<String, Long> freq = firstMessages
       .stream()
       .map(row -> ((String) row[0]).trim().toLowerCase())
       .collect(Collectors.groupingBy(text -> text, Collectors.counting()));
 
-    // Ordena descendente y toma top 5
     return freq
       .entrySet()
       .stream()

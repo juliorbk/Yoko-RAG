@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, UUID> {
   Optional<User> findByEmail(String email);
   List<User> findByOrganizationId(UUID organizationId);
+  Long countByOrganizationId(UUID organizationId);
 }

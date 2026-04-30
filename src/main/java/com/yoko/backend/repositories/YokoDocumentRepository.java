@@ -1,7 +1,6 @@
 package com.yoko.backend.repositories;
 
 import com.yoko.backend.entities.YokoDocument;
-
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,4 +17,6 @@ public interface YokoDocumentRepository
     UUID organizationId,
     Pageable pageable
   );
+
+  Long countByOrganizationId(UUID organizationId);
 }

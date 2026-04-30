@@ -19,8 +19,18 @@ public interface ChatSessionRepository
     Pageable pageable
   );
 
-  // ChatSessions del dia actual
   @Query("SELECT COUNT(s) FROM ChatSession s WHERE s.createdAt >= :since")
   long countSessionsSince(@Param("since") LocalDateTime since);
+
+//Filtro por organizacion
+
+  @Query(
+    "SELECT COUNT(s) FROM ChatSession s WHERE s.organization.id = :orgId AND s.createdAt >= :since"
+  )
+  long countSessionsSinceByOrg(
+    @Param("orgId") UUID orgId,
+    @Param("since") LocalDateTime since
+  );
 }
+
 // findByStudentIdOrderByCreatedAtDesc old function

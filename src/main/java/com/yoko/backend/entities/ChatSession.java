@@ -19,70 +19,37 @@ import lombok.*;
  * Mapped to the "chat_sessions" table in the database.
  */
 @Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "chat_sessions")
-@Data // Lombok: generates getters, setters, equals, hashCode, toString
-@NoArgsConstructor // Lombok: required by JPA (no-arg constructor)
-@AllArgsConstructor // Lombok: constructor with all fields (used with @Builder)
-@Builder // Lombok: enables → ChatSession.builder().title("...").build()
-@EqualsAndHashCode(of = "id")
 public class ChatSession {
 
-  /**
-   * Unique identifier for this chat session.
-   * Auto-generated as a UUID by the database on insert.
-   */
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
-  /**
-   * A human-readable title for the session (e.g., "Math Homework Help").
-   * Optional — no nullable = false constraint is enforced, so sessions
-   * can exist without a title (e.g., before the user names them).
-   */
-  private String title;
-
-  /**
-   * Timestamp of when this session was created.
-   * Set automatically by onCreate() on first persist.
-   * Non-updatable — once written, it cannot be changed.
-   */
-  @Column(name = "created_at", updatable = false)
-  private LocalDateTime createdAt;
-
-  /**
-   * The student who owns this chat session.
-   *
-   * Many sessions can belong to one student (Many-to-One).
-   * Loaded lazily to avoid fetching the full student record on every
-   * session query.
-   *
-   * The FK column "user_id" is required — every session
-   * must be associated with a student.
-   */
+  // ✅ Nullable — guests no tienen usuario registrado
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = true)
   @JsonIgnore
   private User user;
 
-  /**
-   * The list of messages that belong to this session.
-   *
-   * One session has many messages (One-to-Many), mapped by the
-   * "chatSession" field on the Message entity.
-   *
-   * CascadeType.ALL — any operation on the session (persist, merge,
-   * remove, etc.) is automatically propagated to its messages.
-   * Saving a session saves its messages too.
-   *
-   * orphanRemoval = true — if a message is removed from this list,
-   * it is automatically deleted from the DB, even without calling
-   * remove() explicitly.
-   */
+  // ✅ Columna dedicada para identificar guests
+  @Column(name = "guest_id")
+  private UUID guestId;
+
+  private String title;
+
+  @Column(name = "created_at", updatable = false)
+  private LocalDateTime createdAt;
+
   @OneToMany(
-    mappedBy = "chatSession", // FK lives on the Message side
-    cascade = CascadeType.ALL, // Propagate all operations to child messages
-    orphanRemoval = true // Delete messages removed from this list
+    mappedBy = "chatSession",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
   )
   private List<Message> messages;
 
@@ -90,13 +57,6 @@ public class ChatSession {
   @JoinColumn(name = "organization_id", nullable = false)
   private Organization organization;
 
-  /**
-   * JPA lifecycle hook — runs automatically just before this entity is
-   * first persisted to the database.
-   *
-   * Sets createdAt to the current date/time, so callers using the
-   * builder never need to set it manually.
-   */
   @PrePersist
   protected void onCreate() {
     this.createdAt = LocalDateTime.now();
