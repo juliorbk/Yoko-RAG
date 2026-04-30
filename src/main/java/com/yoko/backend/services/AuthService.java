@@ -122,24 +122,7 @@ public class AuthService {
     }
 
     String jwtToken = jwtService.generateToken(user.getEmail());
-    UserDTO userDTO = UserDTO.builder()
-      .id(user.getId())
-      .name(user.getName())
-      .email(user.getEmail())
-      .role(user.getRole())
-      .organizationId(
-        user.getOrganization() != null ? user.getOrganization().getId() : null
-      )
-      .organizationName(
-        user.getOrganization() != null ? user.getOrganization().getName() : null
-      )
-      .organizationSector(
-        (user.getOrganization() != null &&
-          user.getOrganization().getSector() != null)
-          ? user.getOrganization().getSector().name()
-          : null
-      )
-      .build();
+    UserDTO userDTO = UserDTO.fromUser(user);
 
     log.debug("User logged in: " + userDTO);
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
@@ -179,14 +162,8 @@ public class AuthService {
 
     String jwtToken = jwtService.generateToken(savedAdmin.getEmail());
 
-    UserDTO userDTO = UserDTO.builder()
-      .id(savedAdmin.getId())
-      .name(savedAdmin.getName())
-      .email(savedAdmin.getEmail())
-      .role(savedAdmin.getRole())
-      .organizationName(savedOrg.getName())
-      .organizationSector(savedOrg.getSector().name())
-      .build();
+    UserDTO userDTO = UserDTO.fromUser(savedAdmin);
+    
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
 }
