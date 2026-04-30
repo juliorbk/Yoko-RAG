@@ -2,6 +2,8 @@ package com.yoko.backend.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,6 +32,10 @@ public class Organization {
   private String name;
   private String plan;
   private boolean active;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private OrgSector sector; // E.g., EDUCATION, HOSPITALITY, CORPORATE, RETAIL
 
   @Column(columnDefinition = "TEXT")
   private String aiPersona; // Ej: "Eres el recepcionista virtual del Hotel Llovizna Suites. Tu tono es formal y servicial..."
