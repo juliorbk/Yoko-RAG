@@ -1,5 +1,7 @@
 package com.yoko.backend.controllers;
 
+import com.yoko.backend.DTOs.ChatSessionDTO;
+import com.yoko.backend.DTOs.MessageDTO;
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.User;
@@ -10,9 +12,11 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,17 +41,17 @@ public class ChatController {
 
   //Endpoint para nuevo chat
 
+  // ─── Endpoints ────────────────────────────────────────────────────────────
+
   @PostMapping("/{userId}")
   @Operation(summary = "Create a new chat session")
-  public ResponseEntity<ChatSession> newChat(
+  public ResponseEntity<ChatSessionDTO> newChat(
     @AuthenticationPrincipal User currentUser
   ) {
     ChatSession newSession = chatService.createChatSession(currentUser.getId());
-
-    return ResponseEntity.ok(newSession);
+    return ResponseEntity.ok(ChatSessionDTO.from(newSession));
   }
 
-  //Endpoint para enviar mensaje
   @PostMapping("/{chatId}/messages")
   @Operation(summary = "Send a message")
   public ResponseEntity<String> sendMessage(
@@ -56,39 +60,46 @@ public class ChatController {
     @AuthenticationPrincipal User currentUser
   ) {
     String response = chatService.handleMessage(chatId, message, currentUser);
-
     return ResponseEntity.ok(response);
   }
 
   @GetMapping("/{chatId}")
   @Operation(summary = "Get chat history")
-  public ResponseEntity<List<Message>> getHistory(
-    @PathVariable UUID chatId,
+  public ResponseEntity<List<MessageDTO>> getHistory(
+    @PathVariable @NonNull UUID chatId,
     @AuthenticationPrincipal User currentUser
   ) {
-    List<Message> history = chatService.recentHistory(
-      chatId,
-      currentUser.getId()
-    );
+    List<MessageDTO> history = chatService
+      .recentHistory(chatId, currentUser.getId())
+      .stream()
+      .map(MessageDTO::from)
+      .toList();
     return ResponseEntity.ok(history);
   }
 
   @GetMapping("/my-chats")
   @Operation(summary = "Get user's chats")
-  public ResponseEntity<Page<ChatSession>> getChats(
+  public ResponseEntity<Page<ChatSessionDTO>> getChats(
     @AuthenticationPrincipal User currentUser,
     @RequestParam(defaultValue = "0") int page,
     @RequestParam(defaultValue = "10") int size
   ) {
     Pageable pageable = PageRequest.of(page, size);
-    return ResponseEntity.ok(
-      chatService.getUserChats(currentUser.getId(), pageable)
+    Page<ChatSession> raw = chatService.getUserChats(
+      currentUser.getId(),
+      pageable
     );
+    Page<ChatSessionDTO> dto = new PageImpl<>(
+      raw.getContent().stream().map(ChatSessionDTO::from).toList(),
+      pageable,
+      raw.getTotalElements()
+    );
+    return ResponseEntity.ok(dto);
   }
 
   @DeleteMapping("/{chatId}")
   @Operation(summary = "Delete a chat session")
-  public ResponseEntity<?> deleteChat(
+  public ResponseEntity<Void> deleteChat(
     @PathVariable @NotNull UUID chatId,
     @AuthenticationPrincipal User currentUser
   ) {
