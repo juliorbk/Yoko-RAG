@@ -21,7 +21,7 @@ public class UserDTO {
   private UserRole role;
   private UUID organizationId;
   private String organizationName;
-  private OrgSector organizationSector;
+  private String organizationSector;
 
   public static UserDTO fromUser(User user) {
     UserDTO dto = new UserDTO();
@@ -32,7 +32,7 @@ public class UserDTO {
     if (user.getOrganization() != null) {
       dto.setOrganizationId(user.getOrganization().getId());
       dto.setOrganizationName(user.getOrganization().getName());
-      dto.setOrganizationSector(user.getOrganization().getSector());
+      dto.setOrganizationSector(user.getOrganization().getSector().name());
     }
     return dto;
   }

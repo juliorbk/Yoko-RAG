@@ -114,7 +114,7 @@ public class AuthService {
     User user = userRepository
       .findByEmail(email)
       .orElseThrow(() ->
-        new BadCredentialsException("Invalid Email or Password")
+        new BadCredentialsException("Invalid Email or Password, user not found")
       );
 
     if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -132,6 +132,12 @@ public class AuthService {
       )
       .organizationName(
         user.getOrganization() != null ? user.getOrganization().getName() : null
+      )
+      .organizationSector(
+        (user.getOrganization() != null &&
+          user.getOrganization().getSector() != null)
+          ? user.getOrganization().getSector().name()
+          : null
       )
       .build();
 
@@ -156,6 +162,7 @@ public class AuthService {
       .slug(slug)
       .plan("trial")
       .active(true)
+      .sector(request.getSector())
       .build();
 
     Organization savedOrg = organizationRepository.save(organization);
@@ -177,6 +184,8 @@ public class AuthService {
       .name(savedAdmin.getName())
       .email(savedAdmin.getEmail())
       .role(savedAdmin.getRole())
+      .organizationName(savedOrg.getName())
+      .organizationSector(savedOrg.getSector().name())
       .build();
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
