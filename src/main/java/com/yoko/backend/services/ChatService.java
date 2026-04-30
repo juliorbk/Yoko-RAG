@@ -115,8 +115,10 @@ public class ChatService {
     ChatSession session = sessionRepository
       .findById(chatId)
       .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
-    checkOwnership(session, userId); // Verificación de seguridad antes de borrar
-    sessionRepository.deleteById(chatId);
+    checkOwnership(session, userId);
+    // Force initialize messages collection before deletion to trigger cascade
+    session.getMessages().size();
+    sessionRepository.delete(session);
     log.debug("Chat session {} deleted", chatId);
   }
 
