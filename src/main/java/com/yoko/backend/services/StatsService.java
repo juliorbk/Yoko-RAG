@@ -2,6 +2,9 @@ package com.yoko.backend.services;
 
 import com.yoko.backend.DTOs.StatsResponse;
 import com.yoko.backend.DTOs.TopQuestionDTO;
+import com.yoko.backend.DTOs.UserDTO;
+import com.yoko.backend.entities.ChatSession;
+import com.yoko.backend.entities.Message;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
@@ -27,7 +30,7 @@ public class StatsService {
   private final UserRepository userRepository;
   private final YokoDocumentRepository yokoDocumentRepository;
 
-  // ✅ Recibe orgId en lugar de contar todo
+  //  Recibe orgId en lugar de contar todo
   public StatsResponse buildStats(UUID orgId) {
     long totalUsers = userRepository.countByOrganizationId(orgId);
     long totalMessages = messageRepository.countByChatSessionOrganizationId(
@@ -90,5 +93,58 @@ public class StatsService {
       .limit(5)
       .map(e -> new TopQuestionDTO(e.getValue(), e.getKey()))
       .collect(Collectors.toList());
+  }
+
+  public List<UserDTO> buildUsers(UUID orgId) {
+    List<UserDTO> users = userRepository
+      .findByOrganizationId(orgId)
+      .stream()
+      .map(user -> {
+        UserDTO dto = UserDTO.fromUser(user);
+
+        // Contar sesiones del usuario en esta organización
+        List<ChatSession> sessions =
+          chatSessionRepository.findByUserIdAndOrganizationId(
+            user.getId(),
+            orgId
+          );
+        dto.setSessionCount((long) sessions.size());
+
+        // Contar mensajes y encontrar última actividad
+        long totalMessages = 0;
+        LocalDateTime lastActive = null;
+
+        for (ChatSession session : sessions) {
+          List<Message> messages = messageRepository.findByChatSessionId(
+            session.getId()
+          );
+          totalMessages += messages.size();
+
+          for (Message msg : messages) {
+            if (msg.getCreatedAt() != null) {
+              if (
+                lastActive == null || msg.getCreatedAt().isAfter(lastActive)
+              ) {
+                lastActive = msg.getCreatedAt();
+              }
+            }
+          }
+        }
+
+        dto.setMessageCount(totalMessages);
+        dto.setLastActive(lastActive);
+        dto.setStatus(
+          lastActive != null &&
+            lastActive.isAfter(LocalDateTime.now().minusDays(7))
+            ? "activo"
+            : "inactivo"
+        );
+
+        return dto;
+      })
+      .toList();
+
+    log.info("Retrieved all users from the database");
+    return users;
   }
 }

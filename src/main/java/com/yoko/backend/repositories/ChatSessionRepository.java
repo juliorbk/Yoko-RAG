@@ -2,6 +2,7 @@ package com.yoko.backend.repositories;
 
 import com.yoko.backend.entities.ChatSession;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,8 @@ public interface ChatSessionRepository
     @Param("orgId") UUID orgId,
     @Param("since") LocalDateTime since
   );
+
+  List<ChatSession> findByUserIdAndOrganizationId(UUID userId, UUID orgId);
 }
 
 // findByStudentIdOrderByCreatedAtDesc old function

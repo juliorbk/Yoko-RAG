@@ -31,6 +31,7 @@ public class ChatSession {
   @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
+
   // ✅ Nullable — guests no tienen usuario registrado
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = true)

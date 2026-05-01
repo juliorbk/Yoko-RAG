@@ -4,7 +4,11 @@ import com.yoko.backend.DTOs.DataEntryRequest;
 import com.yoko.backend.DTOs.StatsResponse;
 import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.DTOs.YokoDocDTO;
+import com.yoko.backend.entities.ChatSession;
+import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.User;
+import com.yoko.backend.repositories.ChatSessionRepository;
+import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.repositories.YokoDocumentRepository;
 import com.yoko.backend.services.DataEntryService;
@@ -12,6 +16,8 @@ import com.yoko.backend.services.StatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,19 +47,24 @@ public class AdminController {
   private final DataEntryService dataEntryService;
   private final UserRepository userRepository;
   private final StatsService statsService;
-
   private final YokoDocumentRepository yokoDocumentRepository;
+  private final ChatSessionRepository chatSessionRepository;
+  private final MessageRepository messageRepository;
 
   public AdminController(
     DataEntryService dataEntryService,
     UserRepository userRepository,
     StatsService statsService,
-    YokoDocumentRepository yokoDocumentRepository
+    YokoDocumentRepository yokoDocumentRepository,
+    ChatSessionRepository chatSessionRepository,
+    MessageRepository messageRepository
   ) {
     this.dataEntryService = dataEntryService;
     this.userRepository = userRepository;
     this.statsService = statsService;
     this.yokoDocumentRepository = yokoDocumentRepository;
+    this.chatSessionRepository = chatSessionRepository;
+    this.messageRepository = messageRepository;
   }
 
   /**
@@ -77,18 +88,14 @@ public class AdminController {
   @GetMapping("/users")
   @Operation(
     summary = "Get all users",
-    description = "Endpoint to retrieve all users"
+    description = "Endpoint to retrieve all users with session and message stats"
   )
   public ResponseEntity<List<UserDTO>> getUsers(
     @AuthenticationPrincipal User currentUser
   ) {
-    List<UserDTO> users = userRepository
-      .findByOrganizationId(currentUser.getOrganization().getId())
-      .stream()
-      .map(UserDTO::fromUser)
-      .toList();
+    UUID orgId = currentUser.getOrganization().getId();
+    List<UserDTO> users = statsService.buildUsers(orgId);
 
-    log.info("Retrieved all users from the database");
     return ResponseEntity.ok(users);
   }
 

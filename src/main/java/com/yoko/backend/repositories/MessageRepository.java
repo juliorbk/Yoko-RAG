@@ -55,4 +55,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   );
 
   Long countByChatSessionOrganizationId(UUID orgId);
+
+  List<Message> findByChatSessionId(UUID chatSessionId);
 }

@@ -19,6 +19,39 @@ import org.springframework.security.core.userdetails.UserDetails;
 @EqualsAndHashCode(of = "id")
 public class User implements UserDetails {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
+
+  private String name;
+
+  @Column(unique = true, nullable = false)
+  private String email;
+
+  @Column(nullable = false)
+  private String password;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private UserRole role;
+
+  // ✅ Aquí agregamos el nuevo campo
+  @Builder.Default
+  @Column(nullable = false)
+  private String status = "ACTIVE";
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  @ToString.Exclude
+  private List<ChatSession> chatSessions;
+
+  @ToString.Exclude
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "organization_id")
+  private Organization organization;
+
+  // ─── Métodos de Spring Security ────────────────────────────────────
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority(role.name()));
@@ -26,7 +59,7 @@ public class User implements UserDetails {
 
   @Override
   public String getUsername() {
-    return email; //-> Correo del usuario
+    return email;
   }
 
   @Override
@@ -46,32 +79,6 @@ public class User implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return "ACTIVE".equalsIgnoreCase(this.status);
   }
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
-
-  private String name;
-
-  @Column(unique = true, nullable = false)
-  private String email;
-
-  @Column(nullable = false)
-  private String password;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private UserRole role;
-
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonIgnore
-  @ToString.Exclude
-  private List<ChatSession> chatSessions;
-
-  @ToString.Exclude 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "organization_id")
-  private Organization organization;
 }

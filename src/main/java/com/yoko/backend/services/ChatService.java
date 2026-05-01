@@ -101,7 +101,8 @@ public class ChatService {
 
     ChatSession newSession = ChatSession.builder()
       .user(user)
-      .title("New chat with Yoko :)") // Título por defecto que luego será reemplazado por la IA
+      .title("New chat") // Título por defecto que luego será reemplazado por la IA
+      .organization(user.getOrganization()) // Asocia la sesión a la organización del usuario
       .build();
     log.debug(
       "Creating new chat session for user {}: {}",

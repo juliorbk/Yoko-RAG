@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       userEmail != null &&
       SecurityContextHolder.getContext().getAuthentication() == null
     ) {
-      // Buscamos al usuario en la BD de Informática
+      // Buscamos al usuario en la BD de
       User userDetails = userRepository
         .findByEmail(userEmail)
         .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));

@@ -3,6 +3,7 @@ package com.yoko.backend.DTOs;
 import com.yoko.backend.entities.OrgSector;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,10 @@ public class UserDTO {
   private UUID organizationId;
   private String organizationName;
   private OrgSector organizationSector;
+  private Long sessionCount;
+  private Long messageCount;
+  private LocalDateTime lastActive;
+  private String status;
 
   public static UserDTO fromUser(User user) {
     UserDTO dto = new UserDTO();
@@ -29,10 +34,13 @@ public class UserDTO {
     dto.setEmail(user.getEmail());
     dto.setName(user.getName());
     dto.setRole(user.getRole());
+    dto.setSessionCount(0L);
+    dto.setMessageCount(0L);
+    dto.setStatus("active");
     if (user.getOrganization() != null) {
       dto.setOrganizationId(user.getOrganization().getId());
       dto.setOrganizationName(user.getOrganization().getName());
-      dto.setOrganizationSector(user.getOrganization().getSector());;
+      dto.setOrganizationSector(user.getOrganization().getSector());
     }
     return dto;
   }

@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,6 +43,7 @@ public class Organization {
 
   @ToString.Exclude
   @OneToMany(mappedBy = "organization")
+  @JsonIgnore
   private List<User> users;
 
   @ToString.Exclude
