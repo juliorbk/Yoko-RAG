@@ -343,6 +343,8 @@ public class ChatService {
     );
 
     sessionRepository.save(session); // Actualiza la fecha de modificación del chat
+
+    log.info(yokoResponse);
     return yokoResponse;
   }
 
