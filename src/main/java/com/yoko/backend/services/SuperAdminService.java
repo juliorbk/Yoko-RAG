@@ -286,6 +286,7 @@ public class SuperAdminService {
       );
     }
 
+    
     return GlobalStatsResponse.builder()
       .totalOrganizations(totalOrgs)
       .activeOrganizations(activeOrgs)

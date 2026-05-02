@@ -1,6 +1,5 @@
 package com.yoko.backend.config;
 
-import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.SuperAdminCredentialsRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.JwtService;

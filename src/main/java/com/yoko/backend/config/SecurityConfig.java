@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -37,9 +38,9 @@ public class SecurityConfig {
     throws Exception {
     http
       // 1. Un solo método para CORS apuntando a nuestra fuente
-      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      .cors(Customizer.withDefaults())
       // 2. Un solo método para desactivar CSRF
-      .csrf(AbstractHttpConfigurer::disable)
+      .csrf(csrf -> csrf.disable())
       .authorizeHttpRequests(auth ->
         auth
           // Recursos estáticos y archivos comunes
@@ -99,7 +100,7 @@ public class SecurityConfig {
     );
 
     configuration.setAllowedMethods(
-      Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")
+      Arrays.asList("GET", "POST","PATCH", "PUT", "DELETE", "OPTIONS")
     );
 
     // 🚨 CAMBIO 2: Agregar el header especial de LocalTunnel o usar "*"
@@ -108,7 +109,8 @@ public class SecurityConfig {
         "Authorization",
         "Content-Type",
         "Cache-Control",
-        "Bypass-Tunnel-Reminder"
+        "Bypass-Tunnel-Reminder",
+        "Accept"
       )
     );
 

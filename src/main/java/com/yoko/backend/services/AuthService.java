@@ -143,7 +143,7 @@ public class AuthService {
     Organization organization = Organization.builder()
       .name(request.getOrganizationName())
       .slug(slug)
-      .plan("trial")
+      .plan("free")
       .active(true)
       .sector(request.getSector())
       .build();
