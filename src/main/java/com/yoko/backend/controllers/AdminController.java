@@ -7,17 +7,17 @@ import com.yoko.backend.DTOs.YokoDocDTO;
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.User;
+import com.yoko.backend.entities.YokoDocument;
 import com.yoko.backend.repositories.ChatSessionRepository;
 import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.repositories.YokoDocumentRepository;
-import com.yoko.backend.services.DataEntryService;
+import com.yoko.backend.services.AdminService;
 import com.yoko.backend.services.StatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,8 +27,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,27 +47,22 @@ import org.springframework.web.bind.annotation.RestController;
 )
 public class AdminController {
 
-  private final DataEntryService dataEntryService;
-  private final UserRepository userRepository;
+  private final AdminService adminService;
+
   private final StatsService statsService;
   private final YokoDocumentRepository yokoDocumentRepository;
-  private final ChatSessionRepository chatSessionRepository;
-  private final MessageRepository messageRepository;
 
   public AdminController(
-    DataEntryService dataEntryService,
+    AdminService adminService,
     UserRepository userRepository,
     StatsService statsService,
     YokoDocumentRepository yokoDocumentRepository,
     ChatSessionRepository chatSessionRepository,
     MessageRepository messageRepository
   ) {
-    this.dataEntryService = dataEntryService;
-    this.userRepository = userRepository;
+    this.adminService = adminService;
     this.statsService = statsService;
     this.yokoDocumentRepository = yokoDocumentRepository;
-    this.chatSessionRepository = chatSessionRepository;
-    this.messageRepository = messageRepository;
   }
 
   /**
@@ -81,7 +79,7 @@ public class AdminController {
     @Valid @RequestBody DataEntryRequest request,
     @AuthenticationPrincipal User currentUser
   ) {
-    dataEntryService.ingest(request, currentUser);
+    adminService.ingest(request, currentUser);
     return ResponseEntity.ok(Map.of("message", "Data loaded successfully"));
   }
 
@@ -116,6 +114,7 @@ public class AdminController {
   }
 
   @GetMapping("/docs")
+  @Operation(summary = "Get all documents")
   public ResponseEntity<Page<YokoDocDTO>> getDocs(
     @AuthenticationPrincipal User currentUser,
     @RequestParam(defaultValue = "0") int page,
@@ -139,5 +138,77 @@ public class AdminController {
     );
 
     return ResponseEntity.ok(docs);
+  }
+
+  @GetMapping("/docs/{id}")
+  public ResponseEntity<Map<String, Object>> getDoc(
+    @PathVariable UUID id,
+    @AuthenticationPrincipal User currentUser
+  ) {
+    YokoDocument doc = yokoDocumentRepository
+      .findById(id)
+      .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+
+    return ResponseEntity.ok(
+      Map.of(
+        "id",
+        doc.getId(),
+        "titulo",
+        doc.getTitulo(),
+        "categoria",
+        doc.getCategoria(),
+        "subcategoria",
+        doc.getSubcategoria() != null ? doc.getSubcategoria() : "",
+        "fuente",
+        doc.getFuente() != null ? doc.getFuente() : "",
+        "content",
+        doc.getContent()
+      )
+    );
+  }
+
+  @PutMapping("/docs/{id}")
+  public ResponseEntity<Map<String, String>> updateDoc(
+    @PathVariable UUID id,
+    @RequestBody YokoDocument doc,
+    @AuthenticationPrincipal User currentUser
+  ) {
+    adminService.updateDocument(id, doc);
+
+    return ResponseEntity.ok(
+      Map.of("message", "Documento actualizado correctamente")
+    );
+  }
+
+  @DeleteMapping("/docs/{id}")
+  @Operation(
+    summary = "Delete a document",
+    description = "Deletes a document from relational DB and vector store"
+  )
+  public ResponseEntity<Map<String, String>> deleteDoc(
+    @PathVariable UUID id,
+    @AuthenticationPrincipal User currentUser
+  ) {
+    YokoDocument doc = yokoDocumentRepository
+      .findById(id)
+      .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+
+    // Verificar que el doc pertenezca a la org del admin
+    if (
+      !doc
+        .getOrganization()
+        .getId()
+        .equals(currentUser.getOrganization().getId())
+    ) {
+      return ResponseEntity.status(403).body(
+        Map.of("error", "No tienes permiso para eliminar este documento")
+      );
+    }
+
+    adminService.deleteDocument(doc);
+
+    return ResponseEntity.ok(
+      Map.of("message", "Documento eliminado correctamente")
+    );
   }
 }

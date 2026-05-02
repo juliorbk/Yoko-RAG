@@ -22,12 +22,12 @@ import org.springframework.ai.document.Document;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "yoko_documents") // Buena práctica: nombrar la tabla en plural
+@Table(name = "yoko_documents") 
 public class YokoDocument {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id; // ¡Faltaba la llave primaria!
+  private UUID id; 
 
   @Column(columnDefinition = "TEXT") // Vital para guardar párrafos o documentos largos
   private String content;
