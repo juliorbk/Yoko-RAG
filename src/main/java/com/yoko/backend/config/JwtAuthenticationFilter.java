@@ -1,6 +1,7 @@
 package com.yoko.backend.config;
 
 import com.yoko.backend.entities.User;
+import com.yoko.backend.repositories.SuperAdminCredentialsRepository;
 import com.yoko.backend.repositories.UserRepository;
 import com.yoko.backend.services.JwtService;
 import jakarta.servlet.FilterChain;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,13 +23,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
   private final UserRepository userRepository;
+  private final SuperAdminCredentialsRepository superAdminRepository;
 
   public JwtAuthenticationFilter(
     JwtService jwtService,
-    UserRepository userRepository
+    UserRepository userRepository,
+    SuperAdminCredentialsRepository superAdminRepository
   ) {
     this.jwtService = jwtService;
     this.userRepository = userRepository;
+    this.superAdminRepository = superAdminRepository;
   }
 
   @Override
@@ -38,46 +43,61 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   ) throws ServletException, IOException {
     final String authHeader = request.getHeader("Authorization");
     final String jwt;
-    final String userEmail;
+    final String identifier; // 🔥 Cambiado: Ahora sabemos que puede ser Email o Username
 
-    // 1. Si no hay token, lo dejamos pasar al siguiente filtro (y SecurityConfig lo rebotará con el 403)
+    // 1. Si no hay token, lo dejamos pasar
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       log.debug("Received header {}", authHeader);
       filterChain.doFilter(request, response);
       return;
     }
 
-    // 2. Extraemos el token (quitando los 7 caracteres de "Bearer ")
+    // 2. Extraemos el token y el identificador (subject del JWT)
     jwt = authHeader.substring(7);
-    userEmail = jwtService.extractUsername(jwt);
-    log.info("Logged in successfully user: {}", userEmail);
+    identifier = jwtService.extractUsername(jwt); // extractUsername saca el subject del token
+    log.info("Intento de autenticación para: {}", identifier);
 
-    // 3. Si hay un correo en el token y el usuario aún no está autenticado en este hilo
+    // 3. Verificamos si aún no está autenticado
     if (
-      userEmail != null &&
+      identifier != null &&
       SecurityContextHolder.getContext().getAuthentication() == null
     ) {
-      // Buscamos al usuario en la BD de
-      User userDetails = userRepository
-        .findByEmail(userEmail)
-        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+      UserDetails userDetails = null;
 
-      // Si el token es válido, creamos el "Pase VIP" y lo guardamos en el contexto
+      // 🔥 LÓGICA NUEVA: Identificador dual
+      // Intentamos buscarlo primero como usuario normal (por EMAIL)
+      var regularUser = userRepository.findByEmail(identifier);
+
+      if (regularUser.isPresent()) {
+        userDetails = regularUser.get();
+      } else {
+        // Si no está, significa que el identificador es un USERNAME de Super Admin
+        userDetails = superAdminRepository
+          .findByUsername(identifier)
+          .orElseThrow(() ->
+            new RuntimeException("Usuario/Email no encontrado en el sistema")
+          );
+      }
+
+      // 4. Si el token es válido, creamos la autenticación
       if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-        log.debug("Token valido");
+        log.debug("Token valido para: {}", userDetails.getUsername());
+
         UsernamePasswordAuthenticationToken authToken =
           new UsernamePasswordAuthenticationToken(
             userDetails,
             null,
             userDetails.getAuthorities()
           );
+
         authToken.setDetails(
           new WebAuthenticationDetailsSource().buildDetails(request)
         );
+
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
     }
-    // Continuamos con la petición (ahora sí, dejándolo pasar al controlador)
+
     filterChain.doFilter(request, response);
   }
 }

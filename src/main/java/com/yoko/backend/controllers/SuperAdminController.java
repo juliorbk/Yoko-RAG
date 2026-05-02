@@ -45,6 +45,7 @@ public class SuperAdminController {
     @Valid @RequestBody SuperAdminLoginRequest request
   ) {
     String token = superAdminAuthService.login(request);
+
     return ResponseEntity.ok(Map.of("token", token));
   }
 

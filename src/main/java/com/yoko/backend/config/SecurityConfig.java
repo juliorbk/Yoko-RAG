@@ -58,20 +58,19 @@ public class SecurityConfig {
           // Endpoints públicos (Login, Registro, Swagger)
           .requestMatchers(
             "/api/auth/**",
-            "/api/super/login",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/error"
           )
           .permitAll()
-          // Endpoints de Administración
-          .requestMatchers("/api/admin/**")
-          .hasAuthority("ADMIN")
-          // Todo lo demás requiere token
-          .anyRequest()
-          .authenticated()
+          // Rutas del Super Admin (NUEVAS)
+          .requestMatchers("/api/super/login")
+          .permitAll()
           .requestMatchers("/api/super/**")
           .hasAuthority("SUPER_ADMIN")
+          // Endpoints de Administración de Organización
+          .requestMatchers("/api/admin/**")
+          .hasAuthority("ADMIN")
           .anyRequest()
           .authenticated()
       )
