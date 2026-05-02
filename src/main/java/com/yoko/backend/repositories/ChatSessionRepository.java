@@ -23,7 +23,7 @@ public interface ChatSessionRepository
   @Query("SELECT COUNT(s) FROM ChatSession s WHERE s.createdAt >= :since")
   long countSessionsSince(@Param("since") LocalDateTime since);
 
-//Filtro por organizacion
+  //Filtro por organizacion
 
   @Query(
     "SELECT COUNT(s) FROM ChatSession s WHERE s.organization.id = :orgId AND s.createdAt >= :since"
@@ -34,6 +34,10 @@ public interface ChatSessionRepository
   );
 
   List<ChatSession> findByUserIdAndOrganizationId(UUID userId, UUID orgId);
+
+  void deleteByOrganizationId(UUID orgId);
+
+  Long countByOrganizationId(UUID orgId);
 }
 
 // findByStudentIdOrderByCreatedAtDesc old function

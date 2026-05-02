@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -59,6 +58,7 @@ public class SecurityConfig {
           // Endpoints públicos (Login, Registro, Swagger)
           .requestMatchers(
             "/api/auth/**",
+            "/api/super/login",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/error"
@@ -68,6 +68,10 @@ public class SecurityConfig {
           .requestMatchers("/api/admin/**")
           .hasAuthority("ADMIN")
           // Todo lo demás requiere token
+          .anyRequest()
+          .authenticated()
+          .requestMatchers("/api/super/**")
+          .hasAuthority("SUPER_ADMIN")
           .anyRequest()
           .authenticated()
       )

@@ -12,4 +12,6 @@ public interface OrganizationRepository
 {
   Optional<Organization> findBySlug(String slug);
   boolean existsBySlug(String slug);
+
+  long countByActiveTrue();
 }

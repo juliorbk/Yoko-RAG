@@ -57,4 +57,17 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
   Long countByChatSessionOrganizationId(UUID orgId);
 
   List<Message> findByChatSessionId(UUID chatSessionId);
+
+  void deleteByChatSessionId(UUID chatSessionId);
+
+  @Query(
+    """
+    SELECT CAST(m.createdAt AS date) as day, COUNT(m) as total
+    FROM Message m
+    WHERE m.createdAt >= :since
+    GROUP BY CAST(m.createdAt AS date)
+    ORDER BY CAST(m.createdAt AS date) ASC
+    """
+  )
+  List<Object[]> countMessagesPerDayFrom(@Param("since") LocalDateTime since);
 }

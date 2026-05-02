@@ -31,6 +31,8 @@ public class JwtService {
   @Value("${application.security.jwt.expiration: 10800000}") // 3 horas en milisegundos
   private long jwtExpiration;
 
+  private static final long IMPERSONATION_EXPIRATION = 1800000L; // 30 minutos
+
   // 1. Extraer el correo del token (que es nuestro Subject)
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
@@ -85,5 +87,69 @@ public class JwtService {
   private SecretKey getSignInKey() {
     byte[] keyBytes = Decoders.BASE64.decode(secretKey);
     return Keys.hmacShaKeyFor(keyBytes);
+  }
+
+  // SuperAdmin JWT SERVICE ADDS
+
+  // 1. Token de super-administrador
+  public String generateSuperAdminToken(String username) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("role", "SUPER_ADMIN");
+    claims.put("isSuperAdmin", true);
+
+    return Jwts.builder()
+      .claims(claims)
+      .subject(username)
+      .issuedAt(new Date(System.currentTimeMillis()))
+      .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+      .signWith(getSignInKey(), Jwts.SIG.HS256)
+      .compact();
+  }
+
+  // 2. Token de impersonación — corta duración, marca quién lo generó
+  public String generateImpersonationToken(
+    String adminEmail,
+    String superAdminUsername
+  ) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("impersonatedBy", superAdminUsername);
+    claims.put("isImpersonation", true);
+
+    return Jwts.builder()
+      .claims(claims)
+      .subject(adminEmail)
+      .issuedAt(new Date(System.currentTimeMillis()))
+      .expiration(
+        new Date(System.currentTimeMillis() + IMPERSONATION_EXPIRATION)
+      )
+      .signWith(getSignInKey(), Jwts.SIG.HS256)
+      .compact();
+  }
+
+  // 3. Extrae el claim de rol del token (para distinguir SUPER_ADMIN de USER/ADMIN)
+  public String extractRole(String token) {
+    return extractClaim(token, claims -> claims.get("role", String.class));
+  }
+
+  // 4. Verifica si es un token de super admin
+  public boolean isSuperAdminToken(String token) {
+    try {
+      Boolean isSuperAdmin = extractClaim(token, claims ->
+        claims.get("isSuperAdmin", Boolean.class)
+      );
+      return Boolean.TRUE.equals(isSuperAdmin);
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  // 5. Valida token de super admin (el subject es username, no email)
+  public boolean isSuperAdminTokenValid(String token, String username) {
+    final String subject = extractUsername(token);
+    return (
+      subject.equals(username) &&
+      !isTokenExpired(token) &&
+      isSuperAdminToken(token)
+    );
   }
 }
