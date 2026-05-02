@@ -8,7 +8,7 @@ import lombok.*;
 // ─────────────────────────────────────────────────────────────────────────────
 // Vista de una organización con métricas agregadas para el panel del SuperAdmin
 // ─────────────────────────────────────────────────────────────────────────────
-@Data
+  @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,6 +20,7 @@ public class OrgDetailDTO {
   private String plan;
   private boolean active;
   private OrgSector sector;
+  private String aiPersona; // Prompt contextual para Yoko
 
   // Métricas
   private long totalUsers;

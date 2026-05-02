@@ -152,4 +152,15 @@ public class SuperAdminController {
       superAdminService.impersonateOrgAdmin(orgId, principal.getName())
     );
   }
+
+  // ─── GESTIÓN DE AI PERSONA ─────────────────────────────────────────────────
+
+  @PatchMapping("/organizations/{orgId}/persona")
+  @Operation(summary = "Actualiza el prompt contextual (AI Persona) de una organización")
+  public ResponseEntity<OrgDetailDTO> updatePersona(
+    @PathVariable UUID orgId,
+    @RequestBody String persona
+  ) {
+    return ResponseEntity.ok(superAdminService.updateOrganizationPersona(orgId, persona));
+  }
 }

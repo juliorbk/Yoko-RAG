@@ -52,4 +52,7 @@ public class Organization {
 
   @Column(unique = true, nullable = false)
   private String slug; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
+
+  @Column(unique = true, nullable = false)
+  private String url; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
 }

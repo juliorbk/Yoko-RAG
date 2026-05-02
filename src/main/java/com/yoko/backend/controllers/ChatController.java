@@ -2,12 +2,14 @@ package com.yoko.backend.controllers;
 
 import com.yoko.backend.DTOs.ChatSessionDTO;
 import com.yoko.backend.DTOs.MessageDTO;
+import com.yoko.backend.DTOs.WidgetSessionRequest;
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.services.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +53,14 @@ public class ChatController {
     ChatSession newSession = chatService.createChatSession(currentUser.getId());
     return ResponseEntity.ok(ChatSessionDTO.from(newSession));
   }
+  @PostMapping("/widget")
+  @Operation(summary = "Create a new chat session in a widget")
+  public ResponseEntity<ChatSessionDTO> newChat(
+    @Valid @RequestBody WidgetSessionRequest widgetRequest
+  ) {
+    ChatSession newSession = chatService.createWidgetSession(widgetRequest.getOrganizationSlug());
+    return ResponseEntity.ok(ChatSessionDTO.from(newSession));
+  }
 
   @PostMapping("/{chatId}/messages")
   @Operation(summary = "Send a message")
@@ -60,6 +70,16 @@ public class ChatController {
     @AuthenticationPrincipal User currentUser
   ) {
     String response = chatService.handleMessage(chatId, message, currentUser);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/widget/{sessionId}/message")
+  @Operation(summary = "Send a message from widget (anonymous)")
+  public ResponseEntity<String> sendWidgetMessage(
+    @PathVariable UUID sessionId,
+    @RequestBody String message
+  ) {
+    String response = chatService.handleWidgetMessage(sessionId, message);
     return ResponseEntity.ok(response);
   }
 
@@ -106,4 +126,7 @@ public class ChatController {
     chatService.deleteChatSession(chatId, currentUser.getId());
     return ResponseEntity.ok().build();
   }
+
+
+  
 }

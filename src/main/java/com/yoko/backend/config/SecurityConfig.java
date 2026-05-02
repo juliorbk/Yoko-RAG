@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,6 +69,11 @@ public class SecurityConfig {
           .permitAll()
           .requestMatchers("/api/super/**")
           .hasAuthority("SUPER_ADMIN")
+          // Endpoints del Widget (públicos)
+          .requestMatchers("/api/sessions/widget")
+          .permitAll()
+          .requestMatchers("/api/sessions/widget/**")
+          .permitAll()
           // Endpoints de Administración de Organización
           .requestMatchers("/api/admin/**")
           .hasAuthority("ADMIN")
@@ -90,29 +95,23 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
-    // 🚨 CAMBIO 1: Usar setAllowedOriginPatterns para que el asterisco funcione
     configuration.setAllowedOriginPatterns(
       List.of(
+        "*",
         "http://localhost:5173", // PC local
+        "http://localhost:3000", // PC local
+        "http://localhost:5500", // PC local
         "https://yoko-frontend-*.vercel.app", // Cubre todas las previews
         "https://yoko-frontend-rho.vercel.app" // Tu dominio principal
       )
     );
 
     configuration.setAllowedMethods(
-      Arrays.asList("GET", "POST","PATCH", "PUT", "DELETE", "OPTIONS")
+      Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
     );
 
     // 🚨 CAMBIO 2: Agregar el header especial de LocalTunnel o usar "*"
-    configuration.setAllowedHeaders(
-      Arrays.asList(
-        "Authorization",
-        "Content-Type",
-        "Cache-Control",
-        "Bypass-Tunnel-Reminder",
-        "Accept"
-      )
-    );
+    configuration.setAllowedHeaders(Arrays.asList("*"));
 
     configuration.setAllowCredentials(true);
 

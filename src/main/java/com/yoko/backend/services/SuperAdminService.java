@@ -5,6 +5,7 @@ import com.yoko.backend.entities.Organization;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.*;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -286,7 +287,6 @@ public class SuperAdminService {
       );
     }
 
-    
     return GlobalStatsResponse.builder()
       .totalOrganizations(totalOrgs)
       .activeOrganizations(activeOrgs)
@@ -297,6 +297,36 @@ public class SuperAdminService {
       .messagesLastWeek(messagesLastWeek)
       .topQuestionsGlobal(List.of()) // Extensión futura
       .build();
+  }
+
+  @Transactional
+  public OrgDetailDTO updateOrganizationPersona(UUID orgId, String persona) {
+    // 1. Validar entrada (opcional, pero recomendado)
+    if (persona == null || persona.isBlank()) {
+      throw new IllegalArgumentException(
+        "La persona de IA no puede estar vacía"
+      );
+    }
+
+    // 2. Buscar la entidad con manejo de error específico (Ej: 404 Not Found)
+    Organization org = organizationRepository
+      .findById(orgId)
+      .orElseThrow(() ->
+        new EntityNotFoundException("Organization not found with ID: " + orgId)
+      );
+
+    // 3. Actualizar el estado
+    org.setAiPersona(persona.trim());
+
+    // 4. Logging
+    log.info(
+      "AI Persona updated for org: {} to {}",
+      org.getName(),
+      org.getAiPersona()
+    );
+
+    // 5. Retornar el DTO (Hibernate hará el UPDATE automáticamente por el @Transactional)
+    return OrgDetailDTO.fromOrg(org);
   }
 
   // ─── HELPER ──────────────────────────────────────────────────────────────
