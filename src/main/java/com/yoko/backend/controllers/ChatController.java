@@ -1,5 +1,11 @@
 package com.yoko.backend.controllers;
 
+/**
+ * FIXED VERSION - Code review fixes applied on 2026-05-02
+ * Fixes applied:
+ * 1. Fixed endpoint path - removed unused {userId} path variable
+ * 2. Changed endpoint from "/{userId}" to "/new" for clarity
+ */
 import com.yoko.backend.DTOs.ChatSessionDTO;
 import com.yoko.backend.DTOs.MessageDTO;
 import com.yoko.backend.DTOs.WidgetSessionRequest;
@@ -45,7 +51,9 @@ public class ChatController {
 
   // ─── Endpoints ────────────────────────────────────────────────────────────
 
-  @PostMapping("/{userId}")
+  // FIX: Eliminado {userId} de la ruta ya que usamos @AuthenticationPrincipal
+  // El path variable no se usaba y causaba confusión
+  @PostMapping("/new")
   @Operation(summary = "Create a new chat session")
   public ResponseEntity<ChatSessionDTO> newChat(
     @AuthenticationPrincipal User currentUser

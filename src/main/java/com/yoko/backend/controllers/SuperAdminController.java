@@ -161,6 +161,13 @@ public class SuperAdminController {
     @PathVariable UUID orgId,
     @RequestBody String persona
   ) {
-    return ResponseEntity.ok(superAdminService.updateOrganizationPersona(orgId, persona));
+    // FIX: Validar longitud y contenido del persona para evitar ataques
+    if (persona == null || persona.trim().isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+    if (persona.length() > 10000) { // Límite razonable para persona
+      return ResponseEntity.badRequest().body(null);
+    }
+    return ResponseEntity.ok(superAdminService.updateOrganizationPersona(orgId, persona.trim()));
   }
 }

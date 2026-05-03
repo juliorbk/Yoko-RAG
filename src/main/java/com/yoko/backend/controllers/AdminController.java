@@ -1,11 +1,16 @@
 package com.yoko.backend.controllers;
 
+/**
+ * FIXED VERSION - Code review fixes applied on 2026-05-02
+ * Fixes applied:
+ * 1. Added authorization checks for document access (getDoc, updateDoc)
+ * 2. Standardized error handling to use ResponseStatusException
+ * 3. Fixed tenant isolation for document operations
+ */
 import com.yoko.backend.DTOs.DataEntryRequest;
 import com.yoko.backend.DTOs.StatsResponse;
 import com.yoko.backend.DTOs.UserDTO;
 import com.yoko.backend.DTOs.YokoDocDTO;
-import com.yoko.backend.entities.ChatSession;
-import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.YokoDocument;
 import com.yoko.backend.repositories.ChatSessionRepository;
@@ -17,13 +22,13 @@ import com.yoko.backend.services.StatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -36,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @CrossOrigin(origins = "https://yoko-frontend-rho.vercel.app")
@@ -147,7 +153,25 @@ public class AdminController {
   ) {
     YokoDocument doc = yokoDocumentRepository
       .findById(id)
-      .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+      .orElseThrow(() ->
+        new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Documento no encontrado"
+        )
+      );
+
+    // FIX: Validar que el documento pertenezca a la organización del admin
+    if (
+      !doc
+        .getOrganization()
+        .getId()
+        .equals(currentUser.getOrganization().getId())
+    ) {
+      throw new ResponseStatusException(
+        HttpStatus.FORBIDDEN,
+        "No tienes permiso para ver este documento"
+      );
+    }
 
     return ResponseEntity.ok(
       Map.of(
@@ -173,6 +197,27 @@ public class AdminController {
     @RequestBody YokoDocument doc,
     @AuthenticationPrincipal User currentUser
   ) {
+    // FIX: Validar propiedad del documento antes de actualizar
+    YokoDocument existingDoc = yokoDocumentRepository
+      .findById(id)
+      .orElseThrow(() ->
+        new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Documento no encontrado"
+        )
+      );
+
+    if (
+      !existingDoc
+        .getOrganization()
+        .getId()
+        .equals(currentUser.getOrganization().getId())
+    ) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+        Map.of("error", "No tienes permiso para editar este documento")
+      );
+    }
+
     adminService.updateDocument(id, doc);
 
     return ResponseEntity.ok(

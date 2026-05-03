@@ -1,5 +1,11 @@
 package com.yoko.backend.services;
 
+/**
+ * FIXED VERSION - Code review fixes applied on 2026-05-02
+ * Fixes applied:
+ * 1. Eliminated user enumeration vulnerability in register/login methods
+ * 2. Standardized error messages to prevent email existence leakage
+ */
 import com.yoko.backend.DTOs.AuthResponse;
 import com.yoko.backend.DTOs.OrgRegisterRequest;
 import com.yoko.backend.DTOs.RegisterRequest;
@@ -54,11 +60,9 @@ public class AuthService {
 
   @Transactional
   public AuthResponse register(RegisterRequest request) {
-    //Verificamos que no esté registrado
+    // FIX: Eliminar verificación previa para evitar user enumeration
+    // El registro continúa y se guarda siempre, sin revelar si el email ya existe
 
-    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-      throw new RuntimeException("User already registered");
-    }
     Organization org = organizationRepository
       .findBySlug(request.getOrganizationSlug())
       .orElseThrow(() -> new RuntimeException("Organization not found"));
@@ -118,7 +122,7 @@ public class AuthService {
     User user = userRepository
       .findByEmail(email)
       .orElseThrow(() ->
-        new BadCredentialsException("Invalid Email or Password, user not found")
+        new BadCredentialsException("Invalid Email or Password")
       );
 
     if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -134,9 +138,6 @@ public class AuthService {
 
   @Transactional
   public AuthResponse organizationRegister(OrgRegisterRequest request) {
-    if (userRepository.findByEmail(request.getAdminEmail()).isPresent()) {
-      throw new RuntimeException("Email already registered");
-    }
 
     String baseSlug = request
       .getOrganizationName()
