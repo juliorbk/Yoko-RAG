@@ -23,7 +23,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
   private enum RateLimitedRoute {
     LOGIN("/api/auth/login", 5, 1), // 5 intentos por minuto
     REGISTER("/api/auth/register", 3, 5), // 3 registros por cada 5 minutos
-    SESSIONS("/api/sessions", 15, 30); // 15 solicitudes por cada 30 minutos para endpoints de sesiones
+    SESSIONS("/api/sessions", 15, 30), // 15 solicitudes por cada 30 minutos para endpoints de sesiones
+    ADMIN_OPERATIONS("/api/admin", 30, 1),
+    SUPER_ADMIN_OPS("/api/super", 20, 1);
 
     final String path;
     final int capacity;
@@ -36,7 +38,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
   }
 
-
   private Bucket createBucket(RateLimitedRoute route) {
     Bandwidth limit = Bandwidth.builder()
       .capacity(route.capacity)
@@ -45,7 +46,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
     return Bucket.builder().addLimit(limit).build();
   }
 
-
   private String resolveIp(HttpServletRequest request) {
     String forwarded = request.getHeader("X-Forwarded-For");
     if (forwarded != null && !forwarded.isBlank()) {
@@ -53,7 +53,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
     return request.getRemoteAddr();
   }
-
 
   @Override
   public void doFilterInternal(

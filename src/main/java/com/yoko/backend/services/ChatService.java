@@ -384,6 +384,12 @@ public class ChatService {
         )
       );
     Organization org = session.getOrganization();
+    if (!org.isActive()) {
+      throw new ResponseStatusException(
+        HttpStatus.FORBIDDEN,
+        "Alerta: Acceso cruzado detectado. La organización esta deshabilitada."
+      );
+    }
     if (org == null) {
       log.error(
         "El chat {} no tiene una organización asignada",

@@ -9,6 +9,8 @@ import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.OrganizationRepository;
 import com.yoko.backend.repositories.UserRepository;
+import jakarta.transaction.Transactional;
+import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +51,8 @@ public class AuthService {
    *
    * @throws RuntimeException If the user is already registered or the password is invalid.
    */
+
+  @Transactional
   public AuthResponse register(RegisterRequest request) {
     //Verificamos que no esté registrado
 
@@ -128,17 +132,20 @@ public class AuthService {
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
   }
 
+  @Transactional
   public AuthResponse organizationRegister(OrgRegisterRequest request) {
     if (userRepository.findByEmail(request.getAdminEmail()).isPresent()) {
       throw new RuntimeException("Email already registered");
     }
 
-    String slug = request
+    String baseSlug = request
       .getOrganizationName()
       .toLowerCase()
       .replaceAll("[^a-z0-9\\s]", "")
       .trim()
       .replaceAll("\\s+", "-");
+
+    String slug = generateUniqueSlug(baseSlug);
 
     Organization organization = Organization.builder()
       .name(request.getOrganizationName())
@@ -163,7 +170,25 @@ public class AuthService {
     String jwtToken = jwtService.generateToken(savedAdmin.getEmail());
 
     UserDTO userDTO = UserDTO.fromUser(savedAdmin);
-    
+
     return AuthResponse.builder().token(jwtToken).user(userDTO).build();
+  }
+
+  /**
+   * Método de apoyo para generar un slug único en la base de datos.
+   * Verifica si existe, y si es así, le anexa un sufijo numérico incremental.
+   */
+  @Transactional
+  private String generateUniqueSlug(String baseSlug) {
+    String slugToTry = baseSlug;
+    int counter = 1;
+
+    // Mientras exista una organización con ese slug, seguimos intentando
+    while (organizationRepository.findBySlug(slugToTry).isPresent()) {
+      slugToTry = baseSlug + "-" + counter;
+      counter++;
+    }
+
+    return slugToTry;
   }
 }

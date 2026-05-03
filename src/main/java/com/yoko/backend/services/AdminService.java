@@ -24,6 +24,23 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminService {
 
+  private final int MAX_MESSAGE_LENGTH = 2000;
+
+  private final List<String> INJECTION_PATTERNS = List.of(
+    "ignore previous instructions",
+    "ignore las instrucciones anteriores",
+    "ignora las reglas",
+    "olvida todo lo anterior",
+    "forget everything",
+    "you are now",
+    "ahora eres",
+    "act as",
+    "actúa como",
+    "</system>",
+    "[[",
+    "]]"
+  );
+
   private final VectorStore vectorStore;
   private final YokoDocumentRepository yokoDocumentRepository;
 
@@ -198,5 +215,27 @@ public class AdminService {
       .replaceAll("[^a-z0-9\\s]", "")
       .trim()
       .replaceAll("\\s+", "_");
+  }
+
+  private String sanitizeUserInput(String input) {
+    if (input == null || input.isBlank()) {
+      throw new IllegalArgumentException("El mensaje no puede estar vacío");
+    }
+    if (input.length() > MAX_MESSAGE_LENGTH) {
+      throw new IllegalArgumentException(
+        "Mensaje demasiado largo. Máximo " + MAX_MESSAGE_LENGTH + " caracteres."
+      );
+    }
+    String lower = input.toLowerCase();
+    for (String pattern : INJECTION_PATTERNS) {
+      if (lower.contains(pattern)) {
+        log.warn(
+          "Posible prompt injection detectada. Patrón: '{}' en sesión",
+          pattern
+        );
+        throw new IllegalArgumentException("prompt injection detected");
+      }
+    }
+    return input.trim();
   }
 }

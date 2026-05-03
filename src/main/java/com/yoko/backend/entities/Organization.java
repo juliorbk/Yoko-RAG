@@ -1,5 +1,6 @@
 package com.yoko.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +12,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
 import java.util.UUID;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -55,4 +55,8 @@ public class Organization {
 
   @Column(unique = true, nullable = false)
   private String url; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
+
+  public boolean isActive() {
+    return active;
+  }
 }
