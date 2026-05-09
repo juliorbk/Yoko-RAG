@@ -16,7 +16,6 @@ import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.OrganizationRepository;
 import com.yoko.backend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
-import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;

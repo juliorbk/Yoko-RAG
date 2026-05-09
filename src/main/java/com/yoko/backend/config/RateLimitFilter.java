@@ -9,9 +9,6 @@ package com.yoko.backend.config;
  */
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.BucketConfiguration;
-import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.Refill;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,7 +63,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
   private void cleanupOldBuckets() {
     long now = System.currentTimeMillis();
     if (now - lastCleanup > CLEANUP_INTERVAL_MS) {
-      long cutoff = now - CLEANUP_INTERVAL_MS;
       buckets.entrySet().removeIf(entry -> {
         Bucket bucket = entry.getValue();
         return bucket.getAvailableTokens() == getRouteCapacity(entry.getKey());

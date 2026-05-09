@@ -10,7 +10,6 @@ import com.yoko.backend.DTOs.ChatSessionDTO;
 import com.yoko.backend.DTOs.MessageDTO;
 import com.yoko.backend.DTOs.WidgetSessionRequest;
 import com.yoko.backend.entities.ChatSession;
-import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.services.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
