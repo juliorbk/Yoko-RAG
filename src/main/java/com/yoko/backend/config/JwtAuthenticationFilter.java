@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -44,9 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    FilterChain filterChain
+    @NonNull HttpServletRequest request,
+    @NonNull HttpServletResponse response,
+    @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
     final String authHeader = request.getHeader("Authorization");
     final String jwt;
@@ -68,8 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       identifier != null &&
       SecurityContextHolder.getContext().getAuthentication() == null
     ) {
-      UserDetails userDetails = null;
-
+      UserDetails userDetails;
       // LÓGICA NUEVA: Identificador dual
       // Intentamos buscarlo primero como usuario normal (por EMAIL)
       var regularUser = userRepository.findByEmail(identifier);
