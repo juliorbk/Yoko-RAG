@@ -110,15 +110,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Verificar si la organización está activa
-        if (userDetails instanceof User user) {
-          if (
-            user.getOrganization() == null || !user.getOrganization().isActive()
-          ) {
-            response.setStatus(HttpStatus.FORBIDDEN.value());
-            filterChain.doFilter(request, response);
-            return;
-          }
-        }
+        // if (userDetails instanceof User user) {
+        //   if (
+        //     user.getOrganization() == null || !user.getOrganization().isActive()
+        //   ) {
+        //     response.setStatus(HttpStatus.FORBIDDEN.value());
+        //     filterChain.doFilter(request, response);
+        //     return;
+        //   }
+        // }
 
         UsernamePasswordAuthenticationToken authToken =
           new UsernamePasswordAuthenticationToken(
