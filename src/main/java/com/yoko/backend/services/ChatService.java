@@ -1,13 +1,5 @@
 package com.yoko.backend.services;
 
-/**
- * FIXED VERSION - Code review fixes applied on 2026-05-02
- * Fixes applied:
- * 1. Eliminated duplicate message saving (user messages were saved twice)
- * 2. Improved prompt injection detection with normalization and expanded patterns
- * 3. Removed redundant security check (organizationId comparison with itself)
- * 4. Standardized error handling to use ResponseStatusException
- */
 import com.yoko.backend.entities.ChatSession;
 import com.yoko.backend.entities.Message;
 import com.yoko.backend.entities.MessageRole;
@@ -18,6 +10,14 @@ import com.yoko.backend.repositories.MessageRepository;
 import com.yoko.backend.repositories.OrganizationRepository;
 import com.yoko.backend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+/**
+ * FIXED VERSION - Code review fixes applied on 2026-05-02
+ * Fixes applied:
+ * 1. Eliminated duplicate message saving (user messages were saved twice)
+ * 2. Improved prompt injection detection with normalization and expanded patterns
+ * 3. Removed redundant security check (organizationId comparison with itself)
+ * 4. Standardized error handling to use ResponseStatusException
+ */
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -97,7 +97,19 @@ public class ChatService {
    * realmente pertenezca al usuario que está ejecutando la petición (evita IDOR/BOLA).
    */
   private void checkOwnership(ChatSession session, UUID requesterId) {
+    // Widget session — has no registered user, should never reach user-only methods
+    if (session.getUser() == null) {
+      //-> this is a guest session, only accessible via widget endpoints
+      log.warn(
+        "Intento de acceso de usuario registrado a sesión de guest: {}",
+        session.getId()
+      );
+      throw new AccessDeniedException(
+        "No tienes permiso para acceder a esta sesión"
+      );
+    }
     if (!session.getUser().getId().equals(requesterId)) {
+      //-> validación de propiedad de sesión
       log.warn(
         "Acceso denegado: usuario {} intentó acceder a sesión de {}",
         requesterId,
@@ -134,6 +146,13 @@ public class ChatService {
       .findBySlug(organizationSlug)
       .orElseThrow(() -> new RuntimeException("Organization not found"));
 
+    if (!organization.isActive()) {
+      throw new ResponseStatusException(
+        HttpStatus.FORBIDDEN,
+        "Alerta: Acceso cruzado detectado. La organización esta deshabilitada."
+      );
+    }
+
     ChatSession newSession = ChatSession.builder()
       .title(organization.getName()) // Título por defecto que luego será reemplazado por la IA
       .organization(organization) // Asocia la sesión a la organización del usuario
@@ -151,7 +170,12 @@ public class ChatService {
   public void deleteChatSession(UUID chatId, UUID userId) {
     ChatSession session = sessionRepository
       .findById(chatId)
-      .orElseThrow(() -> new RuntimeException("Error: Chat session not found"));
+      .orElseThrow(() ->
+        new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Error: Chat session not found"
+        )
+      );
     checkOwnership(session, userId);
     // Force initialize messages collection before deletion to trigger cascade
     session.getMessages().size();
@@ -243,6 +267,24 @@ public class ChatService {
    * @return La respuesta generada por Yoko.
    */
 
+  private String buildSystemPrompt(Organization org) {
+    String persona = org.getAiPersona();
+    if (persona == null || persona.isBlank()) {
+      persona = "Eres un asistente virtual útil y amigable."; // sensible default
+    }
+    return String.format(
+      """
+      %s
+
+      ## Tu Identidad y Tono (Sigue estas instrucciones al pie de la letra)
+      %s
+      """,
+      BASE_SYSTEM_RULES,
+      persona
+    );
+  }
+
+  @Transactional
   public String handleMessage(
     UUID sessionId,
     String rawUserText,
@@ -263,16 +305,7 @@ public class ChatService {
 
     UUID organizationId = userOrg.getId();
 
-    String dynamicSystemPrompt = String.format(
-      """
-      %s
-
-      ## Tu Identidad y Tono (Sigue estas instrucciones al pie de la letra)
-      %s
-      """,
-      BASE_SYSTEM_RULES,
-      userOrg.getAiPersona()
-    );
+    String dynamicSystemPrompt = buildSystemPrompt(userOrg);
 
     // 3. Recuperación de la sesión actual
     ChatSession session = sessionRepository
@@ -297,7 +330,7 @@ public class ChatService {
     // La validación de propiedad de sesión ya se hace en checkOwnership()
 
     // 6. Generación dinámica de título (si es un chat nuevo)
-    if ("New chat with Yoko :)".equals(session.getTitle())) {
+    if ("New chat".equals(session.getTitle())) {
       try {
         session.setTitle(generateChatTitle(userText));
       } catch (Exception e) {
@@ -369,6 +402,13 @@ public class ChatService {
       .call()
       .content();
 
+    messageRepository.save(
+      Message.builder()
+        .chatSession(session)
+        .content(userText)
+        .role(MessageRole.USER)
+        .build()
+    );
     // 12. Persistencia de la respuesta del Asistente
     // FIX: No llamar saveConversationState ya que el mensaje del usuario ya se guardó en el paso 8
     // Solo guardamos la respuesta del asistente para evitar duplicados
@@ -382,7 +422,6 @@ public class ChatService {
 
     sessionRepository.save(session); // Actualiza la fecha de modificación del chat
 
-    log.info(yokoResponse);
     return yokoResponse;
   }
 
@@ -401,12 +440,6 @@ public class ChatService {
         )
       );
     Organization org = session.getOrganization();
-    if (!org.isActive()) {
-      throw new ResponseStatusException(
-        HttpStatus.FORBIDDEN,
-        "Alerta: Acceso cruzado detectado. La organización esta deshabilitada."
-      );
-    }
     if (org == null) {
       log.error(
         "El chat {} no tiene una organización asignada",
@@ -415,16 +448,14 @@ public class ChatService {
       throw new RuntimeException("User organization not found");
     }
 
-    String dynamicSystemPrompt = String.format(
-      """
-      %s
+    if (!org.isActive()) {
+      throw new ResponseStatusException(
+        HttpStatus.FORBIDDEN,
+        "Alerta: Acceso cruzado detectado. La organización esta deshabilitada."
+      );
+    }
 
-      ## Tu Identidad y Tono (Sigue estas instrucciones al pie de la letra)
-      %s
-      """,
-      BASE_SYSTEM_RULES,
-      org.getAiPersona()
-    );
+    String dynamicSystemPrompt = buildSystemPrompt(org);
 
     // 5. Construcción segura del filtro para la DB Vectorial (Evita inyecciones)
     FilterExpressionBuilder expression = new FilterExpressionBuilder();
@@ -459,15 +490,6 @@ public class ChatService {
             : new AssistantMessage(msg.getContent())
         )
         .collect(Collectors.toList());
-
-    // 8. Persistencia del mensaje actual del usuario
-    messageRepository.save(
-      Message.builder()
-        .chatSession(session)
-        .content(userText)
-        .role(MessageRole.USER)
-        .build()
-    );
 
     // 9. RAG: Búsqueda de Similitud en la DB Vectorial (Contexto Empresarial)
     List<Document> documentosContexto = vectorStore.similaritySearch(
@@ -514,6 +536,15 @@ public class ChatService {
       .call()
       .content();
 
+    // 8. Persistencia del mensaje actual del usuario
+    messageRepository.save(
+      Message.builder()
+        .chatSession(session)
+        .content(userText)
+        .role(MessageRole.USER)
+        .build()
+    );
+
     // 12. Persistencia de la respuesta del Asistente
     // FIX: No usar saveConversationState para evitar duplicar el mensaje del usuario
     messageRepository.save(
@@ -528,31 +559,6 @@ public class ChatService {
 
     log.info(yokoResponse);
     return yokoResponse;
-  }
-
-  // FIX: Este método ya no se usa debido a la corrección de duplicados arriba
-  // Se mantiene por si se requiere en el futuro, pero no debe usarse para el flujo principal
-  @Transactional
-  public void saveConversationState(
-    ChatSession session,
-    String userText,
-    String aiResponse
-  ) {
-    messageRepository.save(
-      Message.builder()
-        .chatSession(session)
-        .content(userText)
-        .role(MessageRole.USER)
-        .build()
-    );
-    messageRepository.save(
-      Message.builder()
-        .chatSession(session)
-        .content(aiResponse)
-        .role(MessageRole.ASSISTANT)
-        .build()
-    );
-    sessionRepository.save(session);
   }
 
   /**
@@ -574,8 +580,14 @@ public class ChatService {
 
   public List<Message> recentHistory(
     @NonNull UUID sessionId,
-    UUID requesterId
+    @NonNull UUID requesterId
   ) {
+    if (requesterId == null) {
+      throw new ResponseStatusException(
+        HttpStatus.UNAUTHORIZED,
+        "Authentication required"
+      );
+    }
     ChatSession session = sessionRepository
       .findById(sessionId)
       .orElseThrow(() ->
@@ -592,7 +604,7 @@ public class ChatService {
    * LLamada secundaria al LLM exclusiva para analizar el primer mensaje del usuario
    * y generar un título amigable para el historial de la interfaz web.
    */
-  public String generateChatTitle(String firstMessage) {
+  private String generateChatTitle(String firstMessage) {
     String prompt =
       " Actúa como un resumidor. Genera un título muy corto (máximo 4 a 5 palabras) para este mensaje. " +
       "Debe ser directo, en el mismo idioma del mensaje, sin comillas, sin puntos finales y sin introducciones. " +

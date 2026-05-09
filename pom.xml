@@ -18,7 +18,8 @@
 
   <properties>
     <java.version>21</java.version>
-    <spring-ai.version>1.0.0</spring-ai.version>    <!-- ✅ FIX 2: 1.1.3 no existe en Maven Central, la última estable es 1.0.0 -->
+    <spring-ai.version>1.0.0</spring-ai.version>
+    <lombok.version>1.18.40</lombok.version>
   </properties>
 
   <dependencies>
@@ -32,7 +33,7 @@
     <!-- ── WEB ─────────────────────────────────────────────────── -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>      <!-- ✅ FIX 3: "webmvc" no es un starter válido, es "web" -->
+      <artifactId>spring-boot-starter-web</artifactId>      
     </dependency>
 
     <!-- ── JPA + POSTGRES ─────────────────────────────────────── -->
@@ -58,24 +59,13 @@
       <artifactId>spring-ai-advisors-vector-store</artifactId>
     </dependency>
 
-    <!-- ── SPRING AI: CHAT con OpenAI (GPT) ───────────────────── -->
-    <!--
-      ✅ FIX 4: Se mantiene OpenAI SOLO para ChatModel (GPT-4o, etc.)
-         El EmbeddingModel lo proveerá Transformers (local, sin costo).
-         Para evitar conflicto de beans, se excluye el autoconfigure
-         de OpenAI embeddings.
-    -->
+
     <dependency>
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-model-openai</artifactId>
     </dependency>
 
-    <!-- ── SPRING AI: EMBEDDINGS con Transformers ONNX (local) ── -->
-    <!--
-      ✅ FIX 5: El nombre correcto del starter es spring-ai-starter-model-transformers.
-         "spring-ai-transformers-spring-boot-starter" es el nombre ANTIGUO (pre-1.0).
-         Este starter NO va en dependencyManagement, va aquí en dependencies.
-    -->
+
     <dependency>
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-model-transformers</artifactId>
@@ -97,11 +87,8 @@
     </dependency>
 
     <!-- ── TEST ────────────────────────────────────────────────── -->
-    <!--
-      ✅ FIX 6: "spring-boot-starter-data-jpa-test" y "spring-boot-starter-webmvc-test"
-         no existen. El starter de test correcto es spring-boot-starter-test,
-         que incluye JUnit 5, Mockito y MockMvc.
-    -->
+
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -124,14 +111,6 @@
       <version>0.12.5</version>
       <scope>runtime</scope>
     </dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
-    <!-- Incluye: JUnit 5, AssertJ, Mockito, MockMvc, Hamcrest -->
-</dependency>
- 
-<!-- ② Spring Security Test — necesario para MockMvc con JWT -->
 <dependency>
     <groupId>org.springframework.security</groupId>
     <artifactId>spring-security-test</artifactId>
@@ -178,12 +157,7 @@
         <artifactId>bucket4j-core</artifactId>
         <version>8.10.1</version>
       </dependency>
-      <!--
-        ✅ FIX 7: spring-ai-transformers-spring-boot-starter NO va aquí.
-           El BOM ya gestiona la versión de spring-ai-starter-model-transformers.
-           Tenerlo aquí con versión hardcoded causa conflictos.
-           → ELIMINADO.
-      -->
+
     </dependencies>
   </dependencyManagement>
 
