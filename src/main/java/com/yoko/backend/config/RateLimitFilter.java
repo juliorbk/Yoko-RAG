@@ -63,14 +63,25 @@ public class RateLimitFilter extends OncePerRequestFilter {
       .build();
   }
   
-  // FIX: Método simple para limpiar buckets antiguos (evitar memory leak)
   private void cleanupOldBuckets() {
     long now = System.currentTimeMillis();
     if (now - lastCleanup > CLEANUP_INTERVAL_MS) {
-      // En una implementación real, trackear último acceso y limpiar
-      // Por ahora, el ConcurrentHashMap no crecerá indefinidamente en uso normal
+      long cutoff = now - CLEANUP_INTERVAL_MS;
+      buckets.entrySet().removeIf(entry -> {
+        Bucket bucket = entry.getValue();
+        return bucket.getAvailableTokens() == getRouteCapacity(entry.getKey());
+      });
       lastCleanup = now;
     }
+  }
+
+  private int getRouteCapacity(String bucketKey) {
+    for (RateLimitedRoute route : RateLimitedRoute.values()) {
+      if (bucketKey.endsWith(":" + route.name())) {
+        return route.capacity;
+      }
+    }
+    return 0;
   }
 
   private String resolveIp(HttpServletRequest request) {
@@ -101,6 +112,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
       return;
     }
+
+    cleanupOldBuckets();
 
     String ip = resolveIp(request);
     String bucketKey = ip + ":" + matchedRoute.name();

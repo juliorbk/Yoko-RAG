@@ -195,68 +195,6 @@ public class ChatService {
   }
 
   // --- SEGURIDAD CONTRA PROMPT INJECTIONS ---
-  private static final int MAX_MESSAGE_LENGTH = 2000;
-
-  // FIX: Mejorado - Blacklist expandida y normalización para detectar variaciones
-  // Nota: Para producción, considerar usar análisis semántico en lugar de blacklist
-  private static final List<String> INJECTION_PATTERNS = List.of(
-    "ignore previous instructions",
-    "ignore las instrucciones anteriores",
-    "ignora las reglas",
-    "olvida todo lo anterior",
-    "forget everything",
-    "you are now",
-    "ahora eres",
-    "act as",
-    "actúa como",
-    "</system>",
-    "[[",
-    "]]",
-    "you are",
-    "you are a",
-    "eres un",
-    "pretend you are",
-    "fin de system",
-    "end of system",
-    "modo desarrollador",
-    "developer mode"
-  );
-
-  /**
-   * Limpia y valida el input del usuario antes de que toque cualquier motor (DB o LLM).
-   * Lanza excepción si detecta actividad maliciosa.
-   * FIX: Normaliza el input para evitar bypass simples (mayúsculas, espacios extra)
-   */
-  private String sanitizeUserInput(String input) {
-    if (input == null || input.isBlank()) {
-      throw new IllegalArgumentException("El mensaje no puede estar vacío");
-    }
-    if (input.length() > MAX_MESSAGE_LENGTH) {
-      throw new IllegalArgumentException(
-        "Mensaje demasiado largo. Máximo " + MAX_MESSAGE_LENGTH + " caracteres."
-      );
-    }
-    // FIX: Normalizar removiendo acentos y caracteres especiales para mejor detección
-    String normalized = input
-      .toLowerCase()
-      .replaceAll("[áàäâ]", "a")
-      .replaceAll("[éèëê]", "e")
-      .replaceAll("[íìïî]", "i")
-      .replaceAll("[óòöô]", "o")
-      .replaceAll("[úùüû]", "u")
-      .replaceAll("\\s+", " "); // normalizar espacios
-
-    for (String pattern : INJECTION_PATTERNS) {
-      if (normalized.contains(pattern)) {
-        log.warn(
-          "Posible prompt injection detectada. Patrón: '{}' en sesión",
-          pattern
-        );
-        throw new IllegalArgumentException("prompt injection detected");
-      }
-    }
-    return input.trim();
-  }
 
   /**
    * Flujo principal de procesamiento conversacional. Integra RAG, memoria y el LLM.
@@ -291,7 +229,7 @@ public class ChatService {
     User currentUser
   ) {
     // 1. Sanitización de entrada
-    String userText = sanitizeUserInput(rawUserText);
+    String userText = InputSanitizer.sanitizeUserInput(rawUserText);
 
     // 2. Extracción de Tenant (Organización) desde una fuente confiable (el Servidor)
     Organization userOrg = currentUser.getOrganization();
@@ -428,7 +366,7 @@ public class ChatService {
   @Transactional
   public String handleWidgetMessage(UUID sessionId, String rawUserText) {
     // 1. Sanitización de entrada
-    String userText = sanitizeUserInput(rawUserText);
+    String userText = InputSanitizer.sanitizeUserInput(rawUserText);
 
     // 2. Extracción de Tenant (Organización) desde una fuente confiable (el Servidor)
     ChatSession session = sessionRepository
@@ -462,15 +400,6 @@ public class ChatService {
     var filter = expression
       .eq("organizationId", org.getId().toString())
       .build();
-
-    // // 6. Generación dinámica de título (si es un chat nuevo)
-    // if ("New chat)".equals(session.getTitle())) {
-    //   try {
-    //     session.setTitle(generateChatTitle(userText));
-    //   } catch (Exception e) {
-    //     log.warn("No se pudo generar el título del chat: {}", e.getMessage());
-    //   }
-    // }
 
     // 7. Recuperación de Memoria (Historial Reciente)
     List<Message> recentHistory = messageRepository

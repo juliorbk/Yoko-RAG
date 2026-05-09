@@ -229,10 +229,6 @@ class SuperAdminServiceTest {
     @Test
     @DisplayName("plan inválido debe lanzar BAD_REQUEST")
     void planInvalidoLanzaBadRequest() {
-      when(organizationRepository.findById(orgActiva.getId())).thenReturn(
-        Optional.of(orgActiva)
-      );
-
       assertThatThrownBy(() ->
         superAdminService.changePlan(orgActiva.getId(), "PREMIUM", "yokoadmin")
       )

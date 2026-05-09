@@ -32,7 +32,8 @@ public class Organization {
 
   private String name;
   private String plan;
-  private boolean active;
+  @Builder.Default
+  private boolean active = true;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -53,8 +54,9 @@ public class Organization {
   @Column(unique = true, nullable = false)
   private String slug; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
 
+  @Builder.Default
   @Column(unique = true, nullable = false)
-  private String url; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
+  private String url = ""; // Ej: "hotel-llovizna", "uneg", "clinica-chilemex"
 
   public boolean isActive() {
     return active;

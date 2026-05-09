@@ -79,6 +79,8 @@ public class User implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return "ACTIVE".equalsIgnoreCase(this.status);
+    if (!"ACTIVE".equalsIgnoreCase(this.status)) return false;
+    if (organization != null && !organization.isActive()) return false;
+    return true;
   }
 }

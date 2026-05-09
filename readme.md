@@ -43,9 +43,10 @@ Para que Yoko pueda buscar información en los reglamentos y guías, la base de 
 
 docker run -d \
   --name yoko-db \
+  -e POSTGRES_USER=admin \
   -e POSTGRES_PASSWORD=tu_password \
   -e POSTGRES_DB=yoko_db \
-  -p 5432:5432 \
+  -p 5433:5432 \
   ankane/pgvector
 Una vez creado el contenedor, es crucial activar la extensión vectorial ingresando al mismo:
 

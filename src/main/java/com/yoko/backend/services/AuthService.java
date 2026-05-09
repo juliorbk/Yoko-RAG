@@ -18,6 +18,7 @@ import com.yoko.backend.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,9 +61,6 @@ public class AuthService {
 
   @Transactional
   public AuthResponse register(RegisterRequest request) {
-    // FIX: Eliminar verificación previa para evitar user enumeration
-    // El registro continúa y se guarda siempre, sin revelar si el email ya existe
-
     Organization org = organizationRepository
       .findBySlug(request.getOrganizationSlug())
       .orElseThrow(() -> new RuntimeException("Organization not found"));
@@ -75,7 +73,12 @@ public class AuthService {
       .organization(org)
       .build();
 
-    User registeredUser = userRepository.save(newUser);
+    User registeredUser;
+    try {
+      registeredUser = userRepository.save(newUser);
+    } catch (DataIntegrityViolationException e) {
+      throw new RuntimeException("Registration failed. Please try again later.");
+    }
 
     try {
       emailService.sendWelcomeEmail(
@@ -151,6 +154,7 @@ public class AuthService {
     Organization organization = Organization.builder()
       .name(request.getOrganizationName())
       .slug(slug)
+      .url(slug)
       .plan("free")
       .active(true)
       .sector(request.getSector())

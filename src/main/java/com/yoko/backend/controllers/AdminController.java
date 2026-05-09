@@ -114,8 +114,7 @@ public class AdminController {
     StatsResponse stats = statsService.buildStats(
       currentUser.getOrganization().getId()
     );
-    // Implement logic to gather statistics about the system
-    System.out.println("Stats: " + stats);
+    log.info("Stats: {}", stats);
     return ResponseEntity.ok(stats);
   }
 
@@ -238,14 +237,13 @@ public class AdminController {
       .findById(id)
       .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
 
-    // Verificar que el doc pertenezca a la org del admin
     if (
       !doc
         .getOrganization()
         .getId()
         .equals(currentUser.getOrganization().getId())
     ) {
-      return ResponseEntity.status(403).body(
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
         Map.of("error", "No tienes permiso para eliminar este documento")
       );
     }
