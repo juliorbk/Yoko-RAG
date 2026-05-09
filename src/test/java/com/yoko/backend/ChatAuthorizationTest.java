@@ -6,8 +6,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yoko.backend.entities.ChatSession;
+import com.yoko.backend.entities.Organization;
+import com.yoko.backend.entities.OrgSector;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
 import com.yoko.backend.repositories.ChatSessionRepository;
@@ -21,18 +22,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @DisplayName("Fix 4 — ChatController: autorización de sesiones por propietario")
 class ChatAuthorizationTest {
 
@@ -54,6 +55,7 @@ class ChatAuthorizationTest {
   private User usuarioPropietario;
   private User usuarioAjeno;
   private ChatSession sesionDelPropietario;
+  private Organization orgTest;
 
   private String tokenPropietario;
   private String tokenAjeno;
@@ -63,6 +65,17 @@ class ChatAuthorizationTest {
     UUID idPropietario = UUID.randomUUID();
     UUID idAjeno = UUID.randomUUID();
     UUID idSesion = UUID.randomUUID();
+    UUID idOrg = UUID.randomUUID();
+
+    orgTest = Organization.builder()
+      .id(idOrg)
+      .name("Test Org")
+      .slug("test-org")
+      .url("test-org")
+      .plan("free")
+      .active(true)
+      .sector(OrgSector.OTRO)
+      .build();
 
     usuarioPropietario = User.builder()
       .id(idPropietario)
@@ -70,6 +83,7 @@ class ChatAuthorizationTest {
       .password("hashed")
       .role(UserRole.USER)
       .name("Propietario")
+      .organization(orgTest)
       .build();
 
     usuarioAjeno = User.builder()
@@ -78,6 +92,7 @@ class ChatAuthorizationTest {
       .password("hashed")
       .role(UserRole.USER)
       .name("Ajeno")
+      .organization(orgTest)
       .build();
 
     sesionDelPropietario = ChatSession.builder()
