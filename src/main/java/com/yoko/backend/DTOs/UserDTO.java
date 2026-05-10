@@ -1,47 +1,51 @@
 package com.yoko.backend.DTOs;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.yoko.backend.entities.OrgSector;
 import com.yoko.backend.entities.User;
 import com.yoko.backend.entities.UserRole;
-import java.time.LocalDateTime;
-import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDTO {
 
-  private UUID id;
-  private String name;
-  private String email;
-  private UserRole role;
-  private UUID organizationId;
-  private String organizationName;
-  private OrgSector organizationSector;
-  private Long sessionCount;
-  private Long messageCount;
-  private LocalDateTime lastActive;
-  private String status;
+    private UUID id;
+    private String name;
+    private String email;
+    private UserRole role;
+    private UUID organizationId;
+    private String organizationName;
+    private OrgSector organizationSector;
+    private Long sessionCount;
+    private Long messageCount;
+    private LocalDateTime lastActive;
+    private String status;
 
-  public static UserDTO fromUser(User user) {
-    UserDTO dto = new UserDTO();
-    dto.setId(user.getId());
-    dto.setEmail(user.getEmail());
-    dto.setName(user.getName());
-    dto.setRole(user.getRole());
-    dto.setSessionCount(0L);
-    dto.setMessageCount(0L);
-    dto.setStatus("active");
-    if (user.getOrganization() != null) {
-      dto.setOrganizationId(user.getOrganization().getId());
-      dto.setOrganizationName(user.getOrganization().getName());
-      dto.setOrganizationSector(user.getOrganization().getSector());
+    public static UserDTO fromUser(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setRole(user.getRole());
+        dto.setSessionCount(0L);
+        dto.setMessageCount(0L);
+        dto.setStatus("active");
+        if (user.getOrganization() != null) {
+            dto.setOrganizationId(user.getOrganization().getId());
+            dto.setOrganizationName(user.getOrganization().getName());
+            dto.setOrganizationSector(user.getOrganization().getSector());
+        }
+        return dto;
     }
-    return dto;
-  }
 }

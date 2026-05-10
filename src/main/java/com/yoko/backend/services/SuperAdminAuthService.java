@@ -39,6 +39,10 @@ public class SuperAdminAuthService {
       throw new BadCredentialsException("Credenciales inválidas");
     }
 
+    // SuperAdminAuthService.java:54 utiliza jwtService.generateToken(); debería utilizar
+    //  generateSuperAdminToken(). Resultado: el inicio de sesión del superadministrador
+    //  genera un token sin la declaración `isSuperAdmin: true`, por lo que JwtAuthenticationFilter,
+    // en la línea 89, invoca a `isTokenValid()`, la cual no verifica el rol de superadministrador.
     if (
       !passwordEncoder.matches(request.getPassword(), credentials.getPassword())
     ) {
@@ -51,7 +55,9 @@ public class SuperAdminAuthService {
 
     credentials.setLastLoginAt(LocalDateTime.now());
     adminCredentialsRepository.save(credentials);
-    String jwtToken = jwtService.generateToken(credentials.getUsername());
+    String jwtToken = jwtService.generateSuperAdminToken(
+      credentials.getUsername()
+    );
     log.info("Super admin autenticado: {}", credentials.getUsername());
     return jwtToken;
   }

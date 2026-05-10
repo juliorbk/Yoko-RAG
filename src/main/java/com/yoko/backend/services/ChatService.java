@@ -332,6 +332,13 @@ public class ChatService {
       userText
     );
 
+    messageRepository.save(
+      Message.builder()
+        .chatSession(session)
+        .content(userText)
+        .role(MessageRole.USER)
+        .build()
+    );
     // 11. Llamada al LLM usando la Fluent API de ChatClient de Spring AI
     String yokoResponse = chatClient
       .prompt()
@@ -341,13 +348,6 @@ public class ChatService {
       .call()
       .content();
 
-    messageRepository.save(
-      Message.builder()
-        .chatSession(session)
-        .content(userText)
-        .role(MessageRole.USER)
-        .build()
-    );
     // 12. Persistencia de la respuesta del Asistente
     // FIX: No llamar saveConversationState ya que el mensaje del usuario ya se guardó en el paso 8
     // Solo guardamos la respuesta del asistente para evitar duplicados
@@ -460,15 +460,6 @@ public class ChatService {
       userText
     );
 
-    // 11. Llamada al LLM usando la Fluent API de ChatClient de Spring AI
-    String yokoResponse = chatClient
-      .prompt()
-      .system(dynamicSystemPrompt) // constante, nunca se modifica
-      .messages(historySpringAi)
-      .user(userMessageWithContext) // contexto + pregunta como datos
-      .call()
-      .content();
-
     // 8. Persistencia del mensaje actual del usuario
     messageRepository.save(
       Message.builder()
@@ -477,6 +468,14 @@ public class ChatService {
         .role(MessageRole.USER)
         .build()
     );
+    // 11. Llamada al LLM usando la Fluent API de ChatClient de Spring AI
+    String yokoResponse = chatClient
+      .prompt()
+      .system(dynamicSystemPrompt) // constante, nunca se modifica
+      .messages(historySpringAi)
+      .user(userMessageWithContext) // contexto + pregunta como datos
+      .call()
+      .content();
 
     // 12. Persistencia de la respuesta del Asistente
     // FIX: No usar saveConversationState para evitar duplicar el mensaje del usuario

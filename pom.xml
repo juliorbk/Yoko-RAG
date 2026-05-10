@@ -6,8 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.1</version>    <!-- ✅ FIX 1: Spring Boot 4.x no existe aún, la última estable es 3.4.x -->
-    <relativePath/>
+    <version>3.4.1</version>    <relativePath/>
   </parent>
 
   <groupId>com.yoko.backend</groupId>
@@ -19,8 +18,6 @@
   <properties>
     <java.version>21</java.version>
     <spring-ai.version>1.0.0</spring-ai.version>
-    <lombok.version>1.18.40</lombok.version>
-    <byte-buddy.version>1.17.8</byte-buddy.version>
   </properties>
 
   <dependencies>
@@ -28,16 +25,13 @@
     <dependency>
       <groupId>com.bucket4j</groupId>
       <artifactId>bucket4j-core</artifactId>
-      <version>8.10.1</version>
     </dependency>
 
-    <!-- ── WEB ─────────────────────────────────────────────────── -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>      
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-    <!-- ── JPA + POSTGRES ─────────────────────────────────────── -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -48,13 +42,11 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- ── SPRING AI: VECTOR STORE (PGVector) ─────────────────── -->
     <dependency>
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
     </dependency>
 
-    <!-- ── SPRING AI: ADVISORS (RAG, memory, etc.) ────────────── -->
     <dependency>
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-advisors-vector-store</artifactId>
@@ -72,7 +64,6 @@
       <artifactId>spring-ai-starter-model-transformers</artifactId>
     </dependency>
 
-    <!-- ── DEV TOOLS ───────────────────────────────────────────── -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
@@ -80,15 +71,12 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- ── LOMBOK ──────────────────────────────────────────────── -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <version>1.18.36</version>
       <optional>true</optional>
     </dependency>
-
-    <!-- ── TEST ────────────────────────────────────────────────── -->
-
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -118,11 +106,11 @@
       <version>0.12.5</version>
       <scope>runtime</scope>
     </dependency>
-<dependency>
-    <groupId>org.springframework.security</groupId>
-    <artifactId>spring-security-test</artifactId>
-    <scope>test</scope>
-</dependency>
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-test</artifactId>
+        <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
@@ -150,7 +138,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- BOM de Spring AI: gestiona versiones de todos los módulos AI -->
       <dependency>
         <groupId>org.springframework.ai</groupId>
         <artifactId>spring-ai-bom</artifactId>
@@ -160,7 +147,7 @@
       </dependency>
 
       <dependency>
-        <groupId>com.github.bucket4j</groupId>
+        <groupId>com.bucket4j</groupId>
         <artifactId>bucket4j-core</artifactId>
         <version>8.10.1</version>
       </dependency>
@@ -182,7 +169,7 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
+              <version>1.18.36</version>
             </path>
           </annotationProcessorPaths>
         </configuration>
@@ -199,20 +186,7 @@
           </excludes>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <argLine>-Dnet.bytebuddy.experimental=true</argLine>
-        </configuration>
-      </plugin>
-    </plugins>
+      </plugins>
   </build>
 
-  <!--
-    Spring AI 1.0.0+ está en Maven Central, no necesitas el repositorio
-    spring-milestones a menos que uses versiones -M o -RC.
-    Se elimina para evitar resolución innecesaria de artefactos.
-  -->
-
-</project>
+  </project>

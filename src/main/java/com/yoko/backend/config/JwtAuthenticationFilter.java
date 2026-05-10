@@ -1,11 +1,5 @@
 package com.yoko.backend.config;
 
-/**
- * FIXED VERSION - Code review fixes applied on 2026-05-02
- * Fixes applied:
- * 1. Authentication bypass - disabled users/inactive orgs could still access API
- * 2. Filter chain now properly stops when returning FORBIDDEN
- */
 import com.yoko.backend.entities.User;
 import com.yoko.backend.repositories.SuperAdminCredentialsRepository;
 import com.yoko.backend.repositories.UserRepository;
@@ -14,6 +8,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+/**
+ * FIXED VERSION - Code review fixes applied on 2026-05-02
+ * Fixes applied:
+ * 1. Authentication bypass - disabled users/inactive orgs could still access API
+ * 2. Filter chain now properly stops when returning FORBIDDEN
+ */
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -92,7 +92,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Verificar si el usuario está activo
         // FIX: No continuar el filter chain si el usuario está desactivado
         if (!userDetails.isEnabled()) {
-          log.warn("Intento de acceso con usuario desactivado: {}", userDetails.getUsername());
+          log.warn(
+            "Intento de acceso con usuario desactivado: {}",
+            userDetails.getUsername()
+          );
           response.setStatus(HttpStatus.FORBIDDEN.value());
           return; // FIX: Detener el filtro aquí, no continuar
         }
@@ -103,7 +106,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           if (
             user.getOrganization() == null || !user.getOrganization().isActive()
           ) {
-            log.warn("Intento de acceso con organización inactiva para usuario: {}", userDetails.getUsername());
+            log.warn(
+              "Intento de acceso con organización inactiva para usuario: {}",
+              userDetails.getUsername()
+            );
             response.setStatus(HttpStatus.FORBIDDEN.value());
             return; // FIX: Detener el filtro aquí
           }

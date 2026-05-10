@@ -1,14 +1,16 @@
 package com.yoko.backend.DTOs;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TopQuestionDTO {
 
-  private long count;
-  private String question;
+    private long count;
+    private String question;
 }
