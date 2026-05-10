@@ -5,7 +5,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Represents a chat session initiated by a Student.
@@ -19,7 +25,10 @@ import lombok.*;
  * Mapped to the "chat_sessions" table in the database.
  */
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

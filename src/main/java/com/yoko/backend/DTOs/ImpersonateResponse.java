@@ -1,7 +1,11 @@
 package com.yoko.backend.DTOs;
 
 import java.util.UUID;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Respuesta al impersonar un admin de organización.
@@ -12,7 +16,8 @@ import lombok.*;
  *
  * El frontend debe mostrar un banner visible mientras este token esté activo.
  */
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

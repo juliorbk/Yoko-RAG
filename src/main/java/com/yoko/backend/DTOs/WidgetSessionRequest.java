@@ -1,9 +1,11 @@
 package com.yoko.backend.DTOs;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class WidgetSessionRequest {
 
   @NotBlank(message = "Organization slug is required")

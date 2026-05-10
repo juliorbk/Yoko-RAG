@@ -4,7 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Represents a single message within a chat session.
@@ -18,10 +24,12 @@ import lombok.*;
  */
 @Entity
 @Table(name = "messages")
-@Data // Lombok: generates getters, setters, equals, hashCode, toString
-@NoArgsConstructor // Lombok: required by JPA (no-arg constructor)
-@AllArgsConstructor // Lombok: constructor with all fields (used with @Builder)
-@Builder // Lombok: enables the builder pattern → Message.builder().content("...").build()
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(of = "id")
 public class Message {
 

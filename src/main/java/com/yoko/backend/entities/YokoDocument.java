@@ -13,12 +13,18 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.ai.document.Document;
 
 @Builder
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
