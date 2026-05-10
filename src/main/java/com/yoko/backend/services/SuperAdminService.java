@@ -1,23 +1,36 @@
 package com.yoko.backend.services;
 
-import com.yoko.backend.DTOs.*;
-import com.yoko.backend.entities.Organization;
-import com.yoko.backend.entities.User;
-import com.yoko.backend.entities.UserRole;
-import com.yoko.backend.repositories.*;
-import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.yoko.backend.DTOs.GlobalStatsResponse;
+import com.yoko.backend.DTOs.ImpersonateResponse;
+import com.yoko.backend.DTOs.OrgDetailDTO;
+import com.yoko.backend.DTOs.UserDTO;
+import com.yoko.backend.entities.Organization;
+import com.yoko.backend.entities.User;
+import com.yoko.backend.entities.UserRole;
+import com.yoko.backend.repositories.ChatSessionRepository;
+import com.yoko.backend.repositories.MessageRepository;
+import com.yoko.backend.repositories.OrganizationRepository;
+import com.yoko.backend.repositories.UserRepository;
+import com.yoko.backend.repositories.YokoDocumentRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Lógica de negocio del Super Admin.
@@ -341,4 +354,4 @@ public class SuperAdminService {
         )
       );
   }
-}
+}  
